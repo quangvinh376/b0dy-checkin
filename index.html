@@ -200,6 +200,19 @@
     Nếu bạn đang ở phòng mà vẫn thấy thông báo này (nhà mạng đổi IP),<br>
     coach bấm COACH → CẬP NHẬT IP PHÒNG.</div>
   </div>
+  <div class="stack"><button class="big ghost" onclick="openAdmin()">Admin — truy cập từ xa</button></div>
+</section>
+
+<!-- MAN ADMIN PIN -->
+<section class="screen" id="s-apin">
+  <div class="top"><span class="brand"><svg class="lg" viewBox="0 0 132 43"><use href="#b0dy"/></svg><span class="em">—</span> ADMIN</span></div>
+  <h1>Nhập PIN admin</h1>
+  <div class="pinbottom">
+    <div class="dots" id="ad-dots"></div>
+    <div class="pinerr" id="ad-err"></div>
+    <div class="pad" id="ad-pad"></div>
+    <button class="big ghost" onclick="show('s-blocked')">Quay lại</button>
+  </div>
 </section>
 
 <div class="spin" id="spin">ĐANG XỬ LÝ…</div>
@@ -208,7 +221,8 @@
 <script>
 var API = 'https://script.google.com/macros/s/AKfycbwuMaBXh1pNlzzpOOOEPRqgmno5ASXCDkojrIm3czPlIQUvGpSLtoaaNsOlKquUFlugaQ/exec';
 
-var state = { ip:'', members:[], sel:null, coachPin:'', screen:'s-list', checkinRes:null, _auto:0 };
+var state = { ip:'', members:[], sel:null, coachPin:'', apin:'', screen:'s-list', checkinRes:null, _auto:0 };
+try{ state.apin = localStorage.getItem('b0dy_apin') || ''; }catch(e){}
 
 function $(id){ return document.getElementById(id); }
 function show(id){
@@ -227,6 +241,7 @@ function toast(msg){
 }
 function api(body){
   body.ip = state.ip;
+  if(state.apin && !body.apin) body.apin = state.apin; /* admin da mo khoa -> vuot khoa IP */
   return fetch(API,{method:'POST',credentials:'omit',
     headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(body)})
     .then(function(r){ return r.json(); });
@@ -336,6 +351,22 @@ function reset(){
   $('q').value='';
   renderList(); show('s-list');
   refreshMembers();
+}
+
+/* ---------- admin: truy cap tu xa ---------- */
+function openAdmin(){ startPin('ad', tryAdmin); show('s-apin'); }
+function tryAdmin(pin){
+  spin(true);
+  api({action:'admin', apin:pin}).then(function(res){
+    spin(false);
+    if(!res.ok){
+      try{ localStorage.removeItem('b0dy_apin'); }catch(e){}
+      pinError('ad', res.error==='sai_pin'?'SAI PIN':res.error); return;
+    }
+    state.apin = pin;
+    try{ localStorage.setItem('b0dy_apin', pin); }catch(e){}
+    loadMembers();
+  }).catch(function(){ spin(false); pinError('ad','MẤT MẠNG'); });
 }
 
 /* ---------- coach ---------- */
