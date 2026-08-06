@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="B0DY">
 <meta name="theme-color" content="#0A0A0A">
 <title>B0DY — Check-in</title>
@@ -22,7 +22,7 @@
   }
   *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
   html{background:var(--ink)}
-  /* khoa trang co dinh — khong cho Safari keo gian, khong lo nen trang */
+  /* khoa trang co dinh — khong keo gian, khong lo nen he thong */
   body{position:fixed;inset:0;overflow:hidden;background:var(--ink);color:var(--paper);
        font-family:var(--sans);font-weight:500;
        overscroll-behavior:none;-webkit-user-select:none;user-select:none}
@@ -32,51 +32,69 @@
   .screen.on{display:flex;animation:screenIn .26s cubic-bezier(.2,.7,.3,1)}
   @media (prefers-reduced-motion: reduce){ .screen.on{animation:none} }
 
+  /* header — co hairline de neo cau truc */
   .top{font-family:var(--mono);font-size:11px;letter-spacing:.14em;color:var(--slate);
-       display:flex;justify-content:space-between;align-items:center;padding:6px 2px 22px}
+       display:flex;justify-content:space-between;align-items:center;
+       padding:8px 2px 16px;border-bottom:1px solid var(--hair);margin-bottom:24px}
   .top .em{opacity:.35}
   .brand{display:flex;align-items:center;gap:9px}
   .lg{height:13px;width:40px;display:block}
   .coachlink{color:var(--graphite);padding:8px;font-size:11px;letter-spacing:.14em;background:none;border:none;font-family:var(--mono)}
-  h1{font-size:28px;line-height:1.15;letter-spacing:-.02em;font-weight:500}
-  .sub{font-family:var(--mono);font-size:12px;color:var(--slate);margin-top:10px;line-height:1.6}
+
+  h1{font-size:32px;line-height:1.12;letter-spacing:-.02em;font-weight:500}
+  .label{font-family:var(--mono);font-size:11px;letter-spacing:.14em;color:var(--slate)}
+  .sub{font-family:var(--mono);font-size:12px;color:var(--slate);line-height:1.7}
+
+  /* hero du lieu: so lon — vach tien do — mot cau trang thai */
+  .stat{font-family:var(--mono);font-weight:500;letter-spacing:-.03em;line-height:1;
+        font-size:64px;color:var(--paper);margin-top:10px}
+  .stat i{font-style:normal;color:var(--graphite)}
+  .meter{height:3px;background:var(--hair);margin-top:20px}
+  .meter i{display:block;height:100%;background:var(--paper);transition:width .5s cubic-bezier(.2,.7,.3,1)}
+  .meter.live i{background:var(--acid)}
+  .statline{font-size:15px;color:var(--ash);margin-top:14px;letter-spacing:-.005em}
+  .statline .em{color:var(--graphite)}
 
   /* tim kiem */
   .search{width:100%;background:none;border:none;border-bottom:1px solid var(--hair);
-          border-radius:0;padding:14px 4px;margin-top:14px;color:var(--paper);
+          border-radius:0;padding:14px 4px;margin-top:16px;color:var(--paper);
           font-family:var(--sans);font-weight:500;font-size:18px;letter-spacing:-.01em}
   .search:focus{outline:none;border-bottom-color:var(--slate)}
   .search::placeholder{color:var(--graphite)}
   .search::-webkit-search-cancel-button{display:none}
 
-  /* danh sach ten */
+  /* danh sach ten — moi dong mang du lieu buoi tap */
   #list{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;
         margin-top:2px;padding-bottom:12px}
-  .person{width:100%;display:flex;justify-content:space-between;align-items:center;
+  .person{width:100%;display:flex;justify-content:space-between;align-items:center;gap:16px;
           background:none;border:none;border-bottom:1px solid var(--hair);
-          padding:20px 4px;color:var(--paper);font-family:var(--sans);font-weight:500;
-          font-size:22px;letter-spacing:-.01em;text-align:left}
+          padding:19px 4px;color:var(--paper);font-family:var(--sans);font-weight:500;
+          font-size:21px;letter-spacing:-.01em;text-align:left}
   .person:active{background:rgba(250,250,250,.06)}
-  .person .n{font-family:var(--mono);font-size:12px;color:var(--slate)}
+  .pr{display:flex;flex-direction:column;align-items:flex-end;gap:7px;flex:none}
+  .pr .n{font-family:var(--mono);font-size:12px;color:var(--slate)}
+  .mbar{width:44px;height:2px;background:var(--hair)}
+  .mbar i{display:block;height:100%;background:var(--ash)}
   .empty{font-family:var(--mono);font-size:12px;color:var(--graphite);letter-spacing:.08em;padding:26px 4px}
 
-  /* nut lon */
-  .big{width:100%;border:none;border-radius:0;padding:24px;font-family:var(--sans);
-       font-weight:500;font-size:22px;letter-spacing:-.01em}
+  /* nut lon — label trai, icon monoline phai */
+  .big{width:100%;display:flex;justify-content:space-between;align-items:center;gap:12px;
+       border:none;border-radius:0;padding:26px 24px;font-family:var(--sans);
+       font-weight:500;font-size:21px;letter-spacing:-.01em;text-align:left}
   .big:active{opacity:.82}
+  .bi{width:22px;height:22px;flex:none;fill:none;stroke:currentColor;stroke-width:2;
+      stroke-linecap:square;stroke-linejoin:miter}
   .acid{background:var(--acid);color:var(--ink)}
-  .ghost{background:none;color:var(--slate);border:1px solid var(--hair);margin-top:12px;font-size:16px;padding:18px}
+  .ghost{background:none;color:var(--slate);border:1px solid var(--hair);margin-top:12px;
+         font-size:16px;padding:18px 24px;justify-content:center}
   .stack{margin-top:auto;padding-top:24px}
 
-  /* noi dung can tu tren xuong */
   .body{flex:1;display:flex;flex-direction:column;justify-content:flex-start}
-  .bigname{font-size:40px;line-height:1.1;letter-spacing:-.025em;margin-top:10px;word-break:break-word}
-  .counter{font-family:var(--mono);margin-top:32px}
-  .counter b{font-size:40px;font-weight:500;letter-spacing:-.02em;color:var(--paper)}
-  .counter b i{font-style:normal;color:var(--graphite)}
-  .counter .lbl{font-size:11px;letter-spacing:.14em;color:var(--slate);margin-bottom:8px}
-  /* dong trang thai ky — dang chu thich mono, KHONG giong nut */
-  .sigline{font-family:var(--mono);font-size:12px;letter-spacing:.1em;margin-top:28px}
+  .bigname{font-size:42px;line-height:1.12;letter-spacing:-.025em;margin-top:10px;word-break:break-word}
+  .block{border-top:1px solid var(--hair);margin-top:32px;padding-top:24px}
+
+  /* dong trang thai ky — chu thich mono, KHONG giong nut */
+  .sigline{font-family:var(--mono);font-size:12px;letter-spacing:.1em;margin-top:26px}
   .sigline.okc{color:var(--acid)}
   .sigline.waitc{color:var(--slate)}
   .sigline .dash{opacity:.4;margin-right:8px}
@@ -93,7 +111,7 @@
   .key.mut{background:none;color:var(--slate);font-size:14px}
   .pinerr{font-family:var(--mono);font-size:12px;color:var(--red);height:18px;text-align:center;margin-top:8px}
 
-  /* pending list coach */
+  /* hang cho duyet */
   .prow{display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--hair);padding:16px 2px;gap:10px}
   .prow .who{font-size:19px}
   .prow .meta{font-family:var(--mono);font-size:11px;color:var(--slate);margin-top:4px}
@@ -113,13 +131,18 @@
 </head>
 <body>
 
-<!-- wordmark dung chung -->
-<svg style="display:none" xmlns="http://www.w3.org/2000/svg"><symbol id="b0dy" viewBox="0 0 132 43">
+<!-- wordmark + icon dung chung -->
+<svg style="display:none" xmlns="http://www.w3.org/2000/svg">
+<symbol id="b0dy" viewBox="0 0 132 43">
 <path fill-rule="evenodd" clip-rule="evenodd" d="M0 6.41667V35.75H16.5C23.4667 35.75 27.8667 31.7167 27.8667 26.5833C27.8667 22.9167 25.3 19.6167 21.6333 18.5167C24.5667 17.4167 26.4 14.4833 26.4 11.55C26.4 7.15 22.3667 6.41667 16.8667 6.41667H0ZM7.33333 11.9167H15.4C17.9667 11.9167 19.4333 13.0167 19.4333 15.2167C19.4333 17.4167 17.9667 18.5167 15.4 18.5167H7.33333V11.9167ZM7.33333 24.0167H16.5C19.4333 24.0167 20.9 25.4833 20.9 28.05C20.9 30.6167 19.4333 30.25 16.1333 30.25H7.33333V24.0167Z" fill="#FAFAFA"/>
 <path fill-rule="evenodd" clip-rule="evenodd" d="M32.45 21.0833C32.45 15.4917 34.1498 10.1291 37.1753 6.17517C40.2009 2.22127 44.3045 0 48.5833 0C52.8622 0 56.9657 2.22127 59.9913 6.17517C63.0169 10.1291 64.7167 15.4917 64.7167 21.0833C64.7167 23.852 64.2994 26.5936 63.4886 29.1516C62.6778 31.7095 61.4894 34.0337 59.9913 35.9915C58.4932 37.9493 56.7147 39.5023 54.7573 40.5618C52.7999 41.6213 50.702 42.1667 48.5833 42.1667C44.3045 42.1667 40.2009 39.9454 37.1753 35.9915C34.1498 32.0376 32.45 26.675 32.45 21.0833ZM41.25 21.0833C41.25 17.8256 42.0226 14.7013 43.3979 12.3977C44.7732 10.0941 46.6384 8.8 48.5833 8.8C50.5283 8.8 52.3935 10.0941 53.7688 12.3977C55.1441 14.7013 55.9167 17.8256 55.9167 21.0833C55.9167 24.3411 55.1441 27.4654 53.7688 29.769C52.3935 32.0725 50.5283 33.3667 48.5833 33.3667C46.6384 33.3667 44.7732 32.0725 43.3979 29.769C42.0226 27.4654 41.25 24.3411 41.25 21.0833ZM44.9167 21.0833C44.9167 20.1109 45.303 19.1782 45.9906 18.4906C46.6782 17.803 47.6109 17.4167 48.5833 17.4167C49.5558 17.4167 50.4884 17.803 51.1761 18.4906C51.8637 19.1782 52.25 20.1109 52.25 21.0833C52.25 22.0558 51.8637 22.9884 51.1761 23.6761C50.4884 24.3637 49.5558 24.75 48.5833 24.75C47.6109 24.75 46.6782 24.3637 45.9906 23.6761C45.303 22.9884 44.9167 22.0558 44.9167 21.0833Z" fill="#FAFAFA"/>
 <path fill-rule="evenodd" clip-rule="evenodd" d="M69.3 6.41667V35.75H83.9667C94.9667 35.75 102.3 29.8833 102.3 21.0833C102.3 12.2833 94.9667 6.41667 83.9667 6.41667H69.3ZM76.6333 13.0167H83.6C90.2 13.0167 94.9667 16.6833 94.9667 21.0833C94.9667 25.4833 90.2 29.15 83.6 29.15H76.6333V13.0167Z" fill="#FAFAFA"/>
 <path fill-rule="evenodd" clip-rule="evenodd" d="M102.3 6.41667H110.367L116.967 19.25L123.567 6.41667H131.633L120.633 26.5833V35.75H113.3V26.5833L102.3 6.41667Z" fill="#FAFAFA"/>
-</symbol></svg>
+</symbol>
+<symbol id="i-arr" viewBox="0 0 24 24"><path d="M4 12h15M13 5.5l6.5 6.5-6.5 6.5"/></symbol>
+<symbol id="i-check" viewBox="0 0 24 24"><path d="M4.5 12.5l5.5 5.5L19.5 7"/></symbol>
+<symbol id="i-x" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></symbol>
+</svg>
 
 <!-- MAN 1: DANH SACH -->
 <section class="screen on" id="s-list">
@@ -134,11 +157,17 @@
 <section class="screen" id="s-confirm">
   <div class="top"><span class="brand"><svg class="lg" viewBox="0 0 132 43"><use href="#b0dy"/></svg><span class="em">—</span> CHECK-IN</span></div>
   <div class="body">
-    <div class="sub" style="margin-top:0">BẠN LÀ</div>
+    <div class="label">BẠN LÀ</div>
     <div class="bigname" id="c-name"></div>
+    <div class="block">
+      <div class="label">BUỔI TẬP</div>
+      <div class="stat" id="c-stat"></div>
+      <div class="meter"><i id="c-bar" style="width:0%"></i></div>
+      <div class="statline" id="c-note"></div>
+    </div>
   </div>
   <div class="stack">
-    <button class="big acid" onclick="doCheckin()">Xác nhận đã tập</button>
+    <button class="big acid" onclick="doCheckin()"><span>Xác nhận đã tập</span><svg class="bi"><use href="#i-arr"/></svg></button>
     <button class="big ghost" onclick="show('s-list')">Quay lại</button>
   </div>
 </section>
@@ -147,6 +176,7 @@
 <section class="screen" id="s-sign">
   <div class="top"><span class="brand"><svg class="lg" viewBox="0 0 132 43"><use href="#b0dy"/></svg><span class="em">—</span> COACH XÁC NHẬN</span></div>
   <h1 id="sg-title">Coach xác nhận</h1>
+  <div class="sub" id="sg-sub" style="margin-top:12px"></div>
   <div class="pinbottom">
     <div class="dots" id="sg-dots"></div>
     <div class="pinerr" id="sg-err"></div>
@@ -159,14 +189,16 @@
 <section class="screen" id="s-thanks">
   <div class="top"><span class="brand"><svg class="lg" viewBox="0 0 132 43"><use href="#b0dy"/></svg><span class="em">—</span> CHECK-IN</span></div>
   <div class="body">
-    <h1 id="t-msg" style="font-size:32px"></h1>
-    <div class="counter">
-      <div class="lbl">BUỔI TẬP</div>
-      <b><span id="t-done"></span><i id="t-total"></i></b>
+    <h1 id="t-msg"></h1>
+    <div class="block">
+      <div class="label">BUỔI TẬP</div>
+      <div class="stat" id="t-stat"></div>
+      <div class="meter live"><i id="t-bar" style="width:0%"></i></div>
+      <div class="statline" id="t-note"></div>
+      <div id="t-sig"></div>
     </div>
-    <div id="t-sig"></div>
   </div>
-  <div class="stack"><button class="big acid" onclick="reset()">Đóng</button></div>
+  <div class="stack"><button class="big acid" onclick="reset()"><span>Đóng</span><svg class="bi"><use href="#i-x"/></svg></button></div>
 </section>
 
 <!-- MAN 5: COACH PIN (vao trang duyet) -->
@@ -196,7 +228,7 @@
     <button class="coachlink" onclick="openCoach()">COACH</button></div>
   <div class="body">
     <h1>Chỉ check-in được tại phòng</h1>
-    <div class="sub">Thiết bị này không kết nối WiFi của B0DY.<br>
+    <div class="sub" style="margin-top:14px">Thiết bị này không kết nối WiFi của B0DY.<br>
     Nếu bạn đang ở phòng mà vẫn thấy thông báo này (nhà mạng đổi IP),<br>
     coach bấm COACH → CẬP NHẬT IP PHÒNG.</div>
   </div>
@@ -234,6 +266,7 @@ function show(id){
 }
 function firstName(full){ var p=String(full||'').trim().split(/\s+/); return p[p.length-1]||full; }
 function norm(s){ return String(s||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/đ/g,'d'); }
+function pct(done,total){ return total>0 ? Math.min(100, Math.round(done/total*100)) : 0; }
 function spin(on){ $('spin').classList.toggle('on', !!on); }
 function toast(msg){
   var t=$('toast'); t.textContent=msg; t.classList.add('show');
@@ -283,8 +316,10 @@ function renderList(){
     shown++;
     var b=document.createElement('button');
     b.className='person';
-    b.innerHTML='<span>'+m.name+'</span><span class="n">'+m.done+'/'+m.total+'</span>';
-    b.onclick=function(){ state.sel=m; $('c-name').textContent=m.name; show('s-confirm'); };
+    b.innerHTML='<span>'+m.name+'</span>'
+      +'<span class="pr"><span class="n">'+m.done+'/'+m.total+'</span>'
+      +'<span class="mbar"><i style="width:'+pct(m.done,m.total)+'%"></i></span></span>';
+    b.onclick=function(){ state.sel=m; fillConfirm(m); show('s-confirm'); };
     el.appendChild(b);
   });
   if(!shown){
@@ -293,17 +328,25 @@ function renderList(){
     el.appendChild(d);
   }
 }
+function fillConfirm(m){
+  $('c-name').textContent=m.name;
+  $('c-stat').innerHTML=m.done+'<i>/'+m.total+'</i>';
+  $('c-note').innerHTML='Còn '+m.left+' buổi <span class="em">·</span> Coach '+(m.coach||'—');
+  $('c-bar').style.width='0%';
+  requestAnimationFrame(function(){ requestAnimationFrame(function(){
+    $('c-bar').style.width=pct(m.done,m.total)+'%';
+  });});
+}
 
-/* ---------- checkin (toi uu: goi ngam, khach nhap PIN song song) ---------- */
+/* ---------- checkin (goi ngam, khach nhap PIN song song) ---------- */
 function doCheckin(){
   var m=state.sel;
-  /* ban request ngay, khong cho — sang thang man PIN */
   state.checkinRes = api({action:'checkin', name:m.name})
     .catch(function(){ return {ok:false, error:'network'}; });
   $('sg-title').textContent='Coach '+(m.coach||'')+' xác nhận';
+  $('sg-sub').textContent='BUỔI THỨ '+(m.done+1)+' — '+firstName(m.name).toUpperCase();
   startPin('sg', trySign);
   show('s-sign');
-  /* neu server tra loi mà co van de → keo khach ve */
   state.checkinRes.then(function(res){
     if(res.ok){ if(res.member) state.sel=res.member; return; }
     if(state.screen!=='s-sign') return;
@@ -316,7 +359,7 @@ function doCheckin(){
 function trySign(pin){
   spin(true);
   state.checkinRes.then(function(cres){
-    if(!cres.ok){ spin(false); return; } /* loi da duoc xu ly o handler nen */
+    if(!cres.ok){ spin(false); return; }
     return api({action:'sign', row:cres.row, pin:pin}).then(function(res){
       spin(false);
       if(!res.ok){
@@ -335,14 +378,18 @@ function skipSign(){
   }).catch(function(){ spin(false); });
 }
 function thanks(signed, coach){
-  var m=state.sel;
+  var m=state.sel, d=m.done+1, left=Math.max(0, m.total-d);
   $('t-msg').textContent='Cảm ơn '+firstName(m.name)+' đã tập luyện tại B0DY';
-  $('t-done').textContent=(m.done+1);
-  $('t-total').textContent='/'+m.total;
+  $('t-stat').innerHTML=d+'<i>/'+m.total+'</i>';
+  $('t-note').textContent= left>0 ? 'Còn '+left+' buổi' : 'Hoàn thành gói tập';
   $('t-sig').innerHTML = signed
     ? '<div class="sigline okc"><span class="dash">—</span>COACH '+(coach||'').toUpperCase()+' ĐÃ XÁC NHẬN</div>'
     : '<div class="sigline waitc"><span class="dash">—</span>CHỜ COACH XÁC NHẬN SAU</div>';
+  $('t-bar').style.width='0%';
   show('s-thanks');
+  requestAnimationFrame(function(){ requestAnimationFrame(function(){
+    $('t-bar').style.width=pct(d,m.total)+'%';
+  });});
   clearTimeout(state._auto); state._auto=setTimeout(reset, 20000);
 }
 /* quay ve danh sach: hien ngay tu cache, lam moi ngam phia sau */
