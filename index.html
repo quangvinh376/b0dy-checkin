@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<title>B0DY — Check-in</title>
+<link rel="preconnect" href="https://api.fontshare.com">
+<link href="https://api.fontshare.com/v2/css?f[]=switzer@500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#0A0A0A; --paper:#FAFAFA; --graphite:#4A4A4A; --slate:#767676;
+    --ash:#B0B0B0; --hair:rgba(250,250,250,.14); --acid:#D4FF00; --red:#C2362F;
+    --sans:'Switzer',-apple-system,'Helvetica Neue',sans-serif;
+    --mono:'JetBrains Mono',Menlo,monospace;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+  html,body{height:100%}
+  body{background:var(--ink);color:var(--paper);font-family:var(--sans);font-weight:500;
+       overscroll-behavior:none;-webkit-user-select:none;user-select:none}
+  @keyframes screenIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+  .screen{display:none;flex-direction:column;height:100vh;height:100dvh;padding:max(20px,env(safe-area-inset-top)) 20px max(20px,env(safe-area-inset-bottom))}
+  .screen.on{display:flex;animation:screenIn .26s cubic-bezier(.2,.7,.3,1)}
+  @media (prefers-reduced-motion: reduce){ .screen.on{animation:none} }
+
+  .top{font-family:var(--mono);font-size:11px;letter-spacing:.14em;color:var(--slate);
+       display:flex;justify-content:space-between;align-items:center;padding:6px 2px 22px}
+  .top .em{opacity:.35}
+  /* wordmark B0DY — so 0 co cham */
+  .logo{font-family:var(--sans);font-weight:500;font-size:15px;letter-spacing:.01em;color:var(--paper)}
+  .logo .z{position:relative;display:inline-block}
+  .logo .z::after{content:'';position:absolute;left:50%;top:54%;width:.13em;height:.13em;
+                  background:currentColor;border-radius:50%;transform:translate(-50%,-50%)}
+  .coachlink{color:var(--graphite);padding:8px;font-size:11px;letter-spacing:.14em;background:none;border:none;font-family:var(--mono)}
+  h1{font-size:28px;line-height:1.15;letter-spacing:-.02em;font-weight:500}
+  .sub{font-family:var(--mono);font-size:12px;color:var(--slate);margin-top:10px;line-height:1.6}
+
+  /* danh sach ten */
+  #list{flex:1;overflow-y:auto;margin-top:6px;padding-bottom:12px}
+  .person{width:100%;display:flex;justify-content:space-between;align-items:center;
+          background:none;border:none;border-bottom:1px solid var(--hair);
+          padding:20px 4px;color:var(--paper);font-family:var(--sans);font-weight:500;
+          font-size:22px;letter-spacing:-.01em;text-align:left}
+  .person:active{background:rgba(250,250,250,.06)}
+  .person .n{font-family:var(--mono);font-size:12px;color:var(--slate)}
+
+  /* nut lon */
+  .big{width:100%;border:none;border-radius:0;padding:24px;font-family:var(--sans);
+       font-weight:500;font-size:22px;letter-spacing:-.01em}
+  .big:active{opacity:.82}
+  .acid{background:var(--acid);color:var(--ink)}
+  .ghost{background:none;color:var(--slate);border:1px solid var(--hair);margin-top:12px;font-size:16px;padding:18px}
+  .stack{margin-top:auto;padding-top:24px}
+
+  /* noi dung can tu tren xuong */
+  .body{flex:1;display:flex;flex-direction:column;justify-content:flex-start}
+  .bigname{font-size:40px;line-height:1.1;letter-spacing:-.025em;margin-top:10px;word-break:break-word}
+  .counter{font-family:var(--mono);margin-top:32px}
+  .counter b{font-size:40px;font-weight:500;letter-spacing:-.02em;color:var(--paper)}
+  .counter b i{font-style:normal;color:var(--graphite)}
+  .counter .lbl{font-size:11px;letter-spacing:.14em;color:var(--slate);margin-bottom:8px}
+  /* dong trang thai ky — dang chu thich mono, KHONG giong nut */
+  .sigline{font-family:var(--mono);font-size:12px;letter-spacing:.1em;margin-top:28px}
+  .sigline.okc{color:var(--acid)}
+  .sigline.waitc{color:var(--slate)}
+  .sigline .dash{opacity:.4;margin-right:8px}
+
+  /* PIN pad */
+  .dots{display:flex;gap:14px;margin:26px 0 8px}
+  .dot{width:14px;height:14px;border:1px solid var(--slate);border-radius:50%}
+  .dot.f{background:var(--acid);border-color:var(--acid)}
+  .pad{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:18px}
+  .key{padding:20px;font-family:var(--mono);font-size:26px;background:rgba(250,250,250,.05);
+       border:none;color:var(--paper)}
+  .key:active{background:rgba(250,250,250,.14)}
+  .key.mut{background:none;color:var(--slate);font-size:14px}
+  .pinerr{font-family:var(--mono);font-size:12px;color:var(--red);height:18px;margin-top:10px}
+
+  /* pending list coach */
+  .prow{display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--hair);padding:16px 2px;gap:10px}
+  .prow .who{font-size:19px}
+  .prow .meta{font-family:var(--mono);font-size:11px;color:var(--slate);margin-top:4px}
+  .mini{border:none;font-family:var(--mono);font-size:13px;padding:12px 16px;letter-spacing:.04em}
+  .ok{background:var(--acid);color:var(--ink)}
+  .no{background:none;color:var(--red);border:1px solid rgba(194,54,47,.5)}
+
+  .toast{position:fixed;left:20px;right:20px;bottom:max(20px,env(safe-area-inset-bottom));
+         background:var(--paper);color:var(--ink);padding:16px 18px;font-size:15px;
+         transform:translateY(150%);transition:transform .25s;z-index:50}
+  .toast.show{transform:none}
+  .spin{position:fixed;inset:0;background:rgba(10,10,10,.86);display:none;
+        align-items:center;justify-content:center;z-index:40;font-family:var(--mono);
+        font-size:13px;letter-spacing:.14em;color:var(--acid)}
+  .spin.on{display:flex}
+</style>
+</head>
+<body>
+
+<!-- MAN 1: DANH SACH -->
+<section class="screen on" id="s-list">
+  <div class="top"><span><span class="logo">B<span class="z">0</span>DY</span> <span class="em">—</span> CHECK-IN</span>
+    <button class="coachlink" onclick="openCoach()">COACH</button></div>
+  <h1>Chọn tên của bạn</h1>
+  <div id="list"></div>
+</section>
+
+<!-- MAN 2: XAC NHAN -->
+<section class="screen" id="s-confirm">
+  <div class="top"><span><span class="logo">B<span class="z">0</span>DY</span> <span class="em">—</span> CHECK-IN</span></div>
+  <div class="body">
+    <div class="sub" style="margin-top:0">BẠN LÀ</div>
+    <div class="bigname" id="c-name"></div>
+  </div>
+  <div class="stack">
+    <button class="big acid" onclick="doCheckin()">Xác nhận đã tập</button>
+    <button class="big ghost" onclick="show('s-list')">Quay lại</button>
+  </div>
+</section>
+
+<!-- MAN 3: COACH KY -->
+<section class="screen" id="s-sign">
+  <div class="top"><span><span class="logo">B<span class="z">0</span>DY</span> <span class="em">—</span> COACH XÁC NHẬN</span></div>
+  <h1 id="sg-title">Coach xác nhận</h1>
+  <div class="dots" id="sg-dots"></div>
+  <div class="pinerr" id="sg-err"></div>
+  <div class="pad" id="sg-pad"></div>
+  <div class="stack"><button class="big ghost" onclick="skipSign()">Coach đang bận — để sau</button></div>
+</section>
+
+<!-- MAN 4: CAM ON -->
+<section class="screen" id="s-thanks">
+  <div class="top"><span><span class="logo">B<span class="z">0</span>DY</span> <span class="em">—</span> CHECK-IN</span></div>
+  <div class="body">
+    <h1 id="t-msg" style="font-size:32px"></h1>
+    <div class="counter">
+      <div class="lbl">BUỔI TẬP</div>
+      <b><span id="t-done"></span><i id="t-total"></i></b>
+    </div>
+    <div id="t-sig"></div>
+  </div>
+  <div class="stack"><button class="big acid" onclick="reset()">Đóng</button></div>
+</section>
+
+<!-- MAN 5: COACH PIN (vao trang duyet) -->
+<section class="screen" id="s-cpin">
+  <div class="top"><span><span class="logo">B<span class="z">0</span>DY</span> <span class="em">—</span> COACH</span></div>
+  <h1>Nhập PIN coach</h1>
+  <div class="dots" id="cp-dots"></div>
+  <div class="pinerr" id="cp-err"></div>
+  <div class="pad" id="cp-pad"></div>
+  <div class="stack"><button class="big ghost" onclick="show('s-list')">Quay lại</button></div>
+</section>
+
+<!-- MAN 6: HANG CHO DUYET -->
+<section class="screen" id="s-approve">
+  <div class="top"><span><span class="logo">B<span class="z">0</span>DY</span> <span class="em">—</span> CHỜ XÁC NHẬN</span>
+    <button class="coachlink" onclick="registerIp()">CẬP NHẬT IP PHÒNG</button></div>
+  <h1 id="ap-title">Chờ xác nhận</h1>
+  <div id="ap-list" style="flex:1;overflow-y:auto;margin-top:10px"></div>
+  <div class="stack"><button class="big ghost" onclick="reset()">Xong</button></div>
+</section>
+
+<!-- MAN CHAN IP -->
+<section class="screen" id="s-blocked">
+  <div class="top"><span><span class="logo">B<span class="z">0</span>DY</span> <span class="em">—</span> CHECK-IN</span>
+    <button class="coachlink" onclick="openCoach()">COACH</button></div>
+  <div class="body">
+    <h1>Chỉ check-in được tại phòng</h1>
+    <div class="sub">Thiết bị này không kết nối WiFi của B0DY.<br>
+    Nếu bạn đang ở phòng mà vẫn thấy thông báo này (nhà mạng đổi IP),<br>
+    coach bấm COACH → CẬP NHẬT IP PHÒNG.</div>
+  </div>
+</section>
+
+<div class="spin" id="spin">ĐANG XỬ LÝ…</div>
+<div class="toast" id="toast"></div>
+
+<script>
+var API = 'https://script.google.com/macros/s/AKfycbwuMaBXh1pNlzzpOOOEPRqgmno5ASXCDkojrIm3czPlIQUvGpSLtoaaNsOlKquUFlugaQ/exec';
+
+var state = { ip:'', members:[], sel:null, row:0, coachPin:'', _auto:0 };
+
+function $(id){ return document.getElementById(id); }
+function show(id){
+  document.querySelectorAll('.screen').forEach(function(s){ s.classList.remove('on'); });
+  var el=$(id);
+  void el.offsetWidth; /* restart animation */
+  el.classList.add('on');
+}
+function firstName(full){ var p=String(full||'').trim().split(/\s+/); return p[p.length-1]||full; }
+function spin(on){ $('spin').classList.toggle('on', !!on); }
+function toast(msg){
+  var t=$('toast'); t.textContent=msg; t.classList.add('show');
+  clearTimeout(t._h); t._h=setTimeout(function(){ t.classList.remove('show'); },3200);
+}
+function api(body){
+  body.ip = state.ip;
+  return fetch(API,{method:'POST',credentials:'omit',
+    headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(body)})
+    .then(function(r){ return r.json(); });
+}
+
+/* ---------- khoi dong ---------- */
+function boot(){
+  spin(true);
+  fetch('https://api.ipify.org?format=json').then(function(r){return r.json();})
+    .then(function(j){ state.ip=j.ip||''; })
+    .catch(function(){ state.ip=''; })
+    .then(loadMembers);
+}
+function loadMembers(){
+  spin(true);
+  api({action:'members'}).then(function(res){
+    spin(false);
+    if(!res.ok){
+      if(res.error==='wrong_ip'){ show('s-blocked'); return; }
+      toast('Lỗi tải danh sách: '+res.error); return;
+    }
+    state.members=res.members;
+    var el=$('list'); el.innerHTML='';
+    res.members.forEach(function(m){
+      var b=document.createElement('button');
+      b.className='person';
+      b.innerHTML='<span>'+m.name+'</span><span class="n">'+m.done+'/'+m.total+'</span>';
+      b.onclick=function(){ state.sel=m; $('c-name').textContent=m.name; show('s-confirm'); };
+      el.appendChild(b);
+    });
+    show('s-list');
+  }).catch(function(){ spin(false); toast('Mất mạng — thử lại'); });
+}
+
+/* ---------- checkin ---------- */
+function doCheckin(){
+  spin(true);
+  api({action:'checkin', name:state.sel.name}).then(function(res){
+    spin(false);
+    if(!res.ok){
+      if(res.error==='da_checkin'){ toast(firstName(state.sel.name)+' đã check-in hôm nay rồi'); show('s-list'); }
+      else if(res.error==='wrong_ip'){ show('s-blocked'); }
+      else toast('Lỗi: '+res.error);
+      return;
+    }
+    state.row=res.row;
+    if(res.member) state.sel=res.member;
+    $('sg-title').textContent='Coach '+(state.sel.coach||'')+' xác nhận';
+    startPin('sg', trySign);
+    show('s-sign');
+  }).catch(function(){ spin(false); toast('Mất mạng — thử lại'); });
+}
+function trySign(pin){
+  spin(true);
+  api({action:'sign', row:state.row, pin:pin}).then(function(res){
+    spin(false);
+    if(!res.ok){
+      if(res.error==='sai_pin'){ pinError('sg','SAI PIN'); return; }
+      toast('Lỗi: '+res.error); return;
+    }
+    thanks(true, res.coach);
+  }).catch(function(){ spin(false); pinError('sg','MẤT MẠNG'); });
+}
+function skipSign(){ thanks(false); }
+function thanks(signed, coach){
+  var m=state.sel;
+  $('t-msg').textContent='Cảm ơn '+firstName(m.name)+' đã tập luyện tại B0DY';
+  $('t-done').textContent=(m.done+1);
+  $('t-total').textContent='/'+m.total;
+  $('t-sig').innerHTML = signed
+    ? '<div class="sigline okc"><span class="dash">—</span>COACH '+(coach||'').toUpperCase()+' ĐÃ XÁC NHẬN</div>'
+    : '<div class="sigline waitc"><span class="dash">—</span>CHỜ COACH XÁC NHẬN SAU</div>';
+  show('s-thanks');
+  clearTimeout(state._auto); state._auto=setTimeout(reset, 20000);
+}
+function reset(){ clearTimeout(state._auto); state.sel=null; state.row=0; loadMembers(); }
+
+/* ---------- coach ---------- */
+function openCoach(){ startPin('cp', enterApprove); show('s-cpin'); }
+function enterApprove(pin){
+  state.coachPin=pin; spin(true);
+  api({action:'pending', pin:pin}).then(function(res){
+    spin(false);
+    if(!res.ok){ pinError('cp', res.error==='sai_pin'?'SAI PIN':res.error); return; }
+    renderPending(res);
+  }).catch(function(){ spin(false); pinError('cp','MẤT MẠNG'); });
+}
+function renderPending(res){
+  $('ap-title').textContent = res.pending.length
+    ? 'Chờ xác nhận ('+res.pending.length+')' : 'Không có buổi nào chờ';
+  var el=$('ap-list'); el.innerHTML='';
+  res.pending.forEach(function(p){
+    var d=document.createElement('div'); d.className='prow';
+    d.innerHTML='<div><div class="who">'+p.name+'</div><div class="meta">'+p.date+' · '+p.note+'</div></div>';
+    var okB=document.createElement('button'); okB.className='mini ok'; okB.textContent='DUYỆT';
+    okB.onclick=function(){ decide(p.row,'ok',d); };
+    var noB=document.createElement('button'); noB.className='mini no'; noB.textContent='HỦY';
+    noB.onclick=function(){ decide(p.row,'reject',d); };
+    var wrap=document.createElement('div'); wrap.style.display='flex'; wrap.style.gap='8px';
+    wrap.appendChild(noB); wrap.appendChild(okB); d.appendChild(wrap);
+    el.appendChild(d);
+  });
+  show('s-approve');
+}
+function decide(row, decision, rowEl){
+  spin(true);
+  api({action:'approve', row:row, pin:state.coachPin, decision:decision}).then(function(res){
+    spin(false);
+    if(!res.ok){ toast('Lỗi: '+res.error); return; }
+    rowEl.remove(); toast(decision==='ok'?'Đã duyệt':'Đã hủy buổi này');
+  }).catch(function(){ spin(false); toast('Mất mạng — thử lại'); });
+}
+function registerIp(){
+  spin(true);
+  fetch('https://api.ipify.org?format=json').then(function(r){return r.json();}).then(function(j){
+    state.ip=j.ip||'';
+    return api({action:'setip', pin:state.coachPin});
+  }).then(function(res){
+    spin(false);
+    toast(res.ok ? 'Đã lưu IP phòng: '+res.ip : 'Lỗi: '+res.error);
+  }).catch(function(){ spin(false); toast('Mất mạng — thử lại'); });
+}
+
+/* ---------- PIN pad dung chung ---------- */
+var pinState={};
+function startPin(prefix, onDone){
+  pinState={prefix:prefix, val:'', onDone:onDone};
+  $(prefix+'-err').textContent='';
+  renderDots();
+  var pad=$(prefix+'-pad'); pad.innerHTML='';
+  ['1','2','3','4','5','6','7','8','9','XÓA','0','⌫'].forEach(function(k){
+    var b=document.createElement('button');
+    b.className='key'+((k==='XÓA'||k==='⌫')?' mut':'');
+    b.textContent=k;
+    b.onclick=function(){
+      if(k==='XÓA'){ pinState.val=''; }
+      else if(k==='⌫'){ pinState.val=pinState.val.slice(0,-1); }
+      else if(pinState.val.length<4){ pinState.val+=k; }
+      $(pinState.prefix+'-err').textContent='';
+      renderDots();
+      if(pinState.val.length===4){
+        var v=pinState.val;
+        setTimeout(function(){ pinState.onDone(v); },120);
+      }
+    };
+    pad.appendChild(b);
+  });
+}
+function renderDots(){
+  var el=$(pinState.prefix+'-dots'); el.innerHTML='';
+  for(var i=0;i<4;i++){
+    var d=document.createElement('div');
+    d.className='dot'+(i<pinState.val.length?' f':'');
+    el.appendChild(d);
+  }
+}
+function pinError(prefix,msg){
+  $(prefix+'-err').textContent=msg;
+  pinState.val=''; renderDots();
+}
+
+boot();
+</script>
+</body>
+</html>
