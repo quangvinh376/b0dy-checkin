@@ -61,7 +61,14 @@
   .top .em{opacity:.35}
   .brand{display:flex;align-items:center;gap:9px}
   .lg{height:13px;width:40px;display:block}
-  .coachlink{color:var(--graphite);padding:8px;font-size:11px;letter-spacing:.14em;background:none;border:none;font-family:var(--mono)}
+  /* nut phu tren header — vien hairline + mui ten de doc ra ngay la BAM DUOC */
+  .coachlink{display:inline-flex;align-items:center;gap:8px;color:var(--ash);
+             padding:7px 11px;font-size:11px;letter-spacing:.14em;background:none;
+             border:1px solid var(--hair);font-family:var(--mono);
+             transition:transform .12s ease,border-color .12s ease,color .12s ease}
+  .coachlink:active{transform:scale(.96);border-color:var(--slate);color:var(--paper)}
+  .coachlink .ci{width:12px;height:12px;flex:none;fill:none;stroke:currentColor;
+                 stroke-width:2;stroke-linecap:square;stroke-linejoin:miter}
 
   h1{font-size:32px;line-height:1.12;letter-spacing:-.02em;font-weight:500}
   .label{font-family:var(--mono);font-size:11px;letter-spacing:.14em;color:var(--slate)}
@@ -151,7 +158,15 @@
   .key:active{background:rgba(250,250,250,.14);transform:scale(.94)}
   .key.keyin{opacity:0;animation:rise .38s cubic-bezier(.2,.75,.2,1) forwards}
   .key.mut{background:none;color:var(--slate);font-size:14px}
+  /* xoa-mot-ky-tu: dung icon monoline cung he voi mui ten/tick (glyph ⌫ cua font qua nho va mong,
+     khong can duoc thi giac voi chu "XOA" o cung hang) */
+  .key.mut.bks{padding:14px 20px}
+  .bks-i{display:block;margin:0 auto;width:26px;height:26px;fill:none;stroke:currentColor;
+         stroke-width:2;stroke-linecap:square;stroke-linejoin:miter}
   .pinerr{font-family:var(--mono);font-size:12px;color:var(--red);height:18px;text-align:center;margin-top:8px}
+
+  /* man admin — mot chi so song (IP thiet bi) + mot hanh dong */
+  .ipval{font-family:var(--mono);font-size:34px;letter-spacing:-.01em;color:var(--paper);margin-top:14px}
 
   /* hang cho duyet */
   .prow{display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--hair);padding:16px 2px;gap:10px}
@@ -190,12 +205,13 @@
 <symbol id="i-arr" viewBox="0 0 24 24"><path d="M4 12h15M13 5.5l6.5 6.5-6.5 6.5"/></symbol>
 <symbol id="i-check" viewBox="0 0 24 24"><path d="M4.5 12.5l5.5 5.5L19.5 7"/></symbol>
 <symbol id="i-x" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></symbol>
+<symbol id="i-bks" viewBox="0 0 24 24"><path d="M8.6 4.5H22v15H8.6L1.6 12z"/><path d="M12.6 9.4l5.2 5.2M17.8 9.4l-5.2 5.2"/></symbol>
 </svg>
 
 <!-- MAN 1: DANH SACH -->
 <section class="screen on" id="s-list">
-  <div class="top"><span class="brand"><svg class="lg" viewBox="0 0 132 43"><use href="#b0dy"/></svg><span class="em">—</span> CHECK-IN</span>
-    <button class="coachlink" onclick="openCoach()">COACH</button></div>
+  <div class="top"><span class="brand"><svg class="lg" viewBox="0 0 132 43"><use href="#b0dy"/></svg></span>
+    <button class="coachlink" onclick="openCoach()">COACH<svg class="ci"><use href="#i-arr"/></svg></button></div>
   <h1>Chọn tên của bạn</h1>
   <input class="search" id="q" type="search" placeholder="Tìm tên…" autocomplete="off" autocorrect="off" oninput="renderList()">
   <div id="list"></div>
@@ -205,10 +221,10 @@
 <section class="screen" id="s-confirm">
   <div class="top"><span class="brand"><svg class="lg" viewBox="0 0 132 43"><use href="#b0dy"/></svg><span class="em">—</span> CHECK-IN</span></div>
   <div class="body st">
-    <div class="label">XIN CHÀO</div>
+    <div class="label">BẠN LÀ</div>
     <div class="bigname" id="c-name"></div>
     <div class="block">
-      <div class="label">HÔM NAY <span class="em">—</span> BUỔI THỨ</div>
+      <div class="label">HÔM NAY LÀ BUỔI THỨ</div>
       <div class="stat"><span id="c-num">0</span><i id="c-total"></i></div>
       <div class="meter"><i class="mb" id="c-mb"></i><i class="ma" id="c-ma"></i></div>
       <div class="statline" id="c-note"></div>
@@ -231,7 +247,7 @@
     <div class="dots" id="sg-dots"></div>
     <div class="pinerr" id="sg-err"></div>
     <div class="pad" id="sg-pad"></div>
-    <button class="big ghost" onclick="skipSign()">Xác nhận sau</button>
+    <button class="big ghost" onclick="skipSign()">Coach đang bận — để sau</button>
   </div>
 </section>
 
@@ -254,7 +270,7 @@
 <!-- MAN 5: COACH PIN -->
 <section class="screen" id="s-cpin">
   <div class="top"><span class="brand"><svg class="lg" viewBox="0 0 132 43"><use href="#b0dy"/></svg><span class="em">—</span> COACH</span></div>
-  <h1>Nhập PIN coach</h1>
+  <h1>Nhập mã PIN</h1>
   <div class="pinbottom">
     <div class="dots" id="cp-dots"></div>
     <div class="pinerr" id="cp-err"></div>
@@ -265,22 +281,38 @@
 
 <!-- MAN 6: HANG CHO DUYET -->
 <section class="screen" id="s-approve">
-  <div class="top"><span class="brand"><svg class="lg" viewBox="0 0 132 43"><use href="#b0dy"/></svg><span class="em">—</span> CHỜ XÁC NHẬN</span>
-    <button class="coachlink" onclick="registerIp()">CẬP NHẬT IP PHÒNG</button></div>
+  <div class="top"><span class="brand"><svg class="lg" viewBox="0 0 132 43"><use href="#b0dy"/></svg><span class="em">—</span> CHỜ XÁC NHẬN</span></div>
   <h1 id="ap-title">Chờ xác nhận</h1>
   <div id="ap-list" style="flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;margin-top:10px;padding-bottom:76px;-webkit-mask-image:linear-gradient(to bottom,#000 0%,#000 calc(100% - 72px),transparent 100%);mask-image:linear-gradient(to bottom,#000 0%,#000 calc(100% - 72px),transparent 100%)"></div>
   <div class="stack"><button class="big ghost" onclick="reset()">Xong</button></div>
 </section>
 
+<!-- MAN ADMIN (vao tu nut COACH bang PIN admin) -->
+<section class="screen" id="s-admin">
+  <div class="top"><span class="brand"><svg class="lg" viewBox="0 0 132 43"><use href="#b0dy"/></svg><span class="em">—</span> ADMIN</span></div>
+  <div class="body st">
+    <h1>Admin</h1>
+    <div class="block">
+      <div class="label">IP CỦA THIẾT BỊ NÀY</div>
+      <div class="ipval" id="am-ip">—</div>
+      <div class="statline" id="am-note">Cập nhật để lấy IP này làm IP của phòng</div>
+    </div>
+  </div>
+  <div class="stack">
+    <button class="big acid" onclick="registerIp()"><span>Cập nhật IP phòng</span><svg class="bi"><use href="#i-check"/></svg></button>
+    <button class="big ghost" onclick="reset()">Xong</button>
+  </div>
+</section>
+
 <!-- MAN CHAN IP -->
 <section class="screen" id="s-blocked">
   <div class="top"><span class="brand"><svg class="lg" viewBox="0 0 132 43"><use href="#b0dy"/></svg><span class="em">—</span> CHECK-IN</span>
-    <button class="coachlink" onclick="openCoach()">COACH</button></div>
+    <button class="coachlink" onclick="openCoach()">COACH<svg class="ci"><use href="#i-arr"/></svg></button></div>
   <div class="body st">
     <h1>Chỉ check-in được tại phòng</h1>
     <div class="sub" style="margin-top:14px">Thiết bị này không kết nối WiFi của B0DY.<br>
     Nếu bạn đang ở phòng mà vẫn thấy thông báo này (nhà mạng đổi IP),<br>
-    coach bấm COACH → CẬP NHẬT IP PHÒNG.</div>
+    admin bấm COACH → nhập PIN admin → cập nhật IP phòng.</div>
   </div>
   <div class="stack"><button class="big ghost" onclick="openAdmin()">Admin — truy cập từ xa</button></div>
 </section>
@@ -304,7 +336,7 @@
 <script>
 var API = 'https://script.google.com/macros/s/AKfycbwuMaBXh1pNlzzpOOOEPRqgmno5ASXCDkojrIm3czPlIQUvGpSLtoaaNsOlKquUFlugaQ/exec';
 
-var state = { ip:'', members:[], sel:null, coachPin:'', apin:'', screen:'s-list', checkinRes:null, _auto:0, _ipRetried:false };
+var state = { ip:'', members:[], sel:null, coachPin:'', adminPin:'', apin:'', screen:'s-list', checkinRes:null, _auto:0, _ipRetried:false };
 try{ state.apin = localStorage.getItem('b0dy_apin') || ''; }catch(e){}
 try{ state.ip = localStorage.getItem('b0dy_ip') || ''; }catch(e){}
 try{ var _mc = JSON.parse(localStorage.getItem('b0dy_members')||'null'); if(_mc && _mc.length) state.members=_mc; }catch(e){}
@@ -512,6 +544,7 @@ function thanks(signed, coach){
 }
 function reset(){
   clearTimeout(state._auto); state.sel=null; state.checkinRes=null;
+  state.coachPin=''; state.adminPin='';   /* ve man khach: quen ngay quyen coach/admin */
   $('q').value='';
   renderList(true); show('s-list','fwd');
   refreshMembers();
@@ -535,13 +568,27 @@ function tryAdmin(pin){
 
 /* ---------- coach ---------- */
 function openCoach(){ startPin('cp', enterApprove); show('s-cpin','fwd'); }
+/* Mot o PIN duy nhat: thu PIN coach truoc (truong hop pho bien, 1 luot goi),
+   sai thi thu tiep PIN admin roi mo man Admin. */
 function enterApprove(pin){
   state.coachPin=pin; spin(true);
   api({action:'pending', pin:pin}).then(function(res){
-    spin(false);
-    if(!res.ok){ pinError('cp', res.error==='sai_pin'?'SAI PIN':res.error); return; }
-    renderPending(res);
+    if(res.ok){ spin(false); renderPending(res); return; }
+    if(res.error!=='sai_pin'){ spin(false); pinError('cp', res.error); return; }
+    return api({action:'admin', apin:pin}).then(function(ad){
+      spin(false);
+      if(ad && ad.ok){ openAdminPanel(pin); return; }
+      pinError('cp','SAI PIN');
+    });
   }).catch(function(){ spin(false); pinError('cp','MẤT MẠNG'); });
+}
+/* man Admin: mot chi so song (IP thiet bi) + mot hanh dong (luu IP phong) */
+function openAdminPanel(pin){
+  state.adminPin=pin;
+  $('am-ip').textContent = state.ip || '—';
+  $('am-note').textContent = 'Cập nhật để lấy IP này làm IP của phòng';
+  show('s-admin','fwd');
+  refreshIp().then(function(){ $('am-ip').textContent = state.ip || '—'; });
 }
 function renderPending(res){
   $('ap-title').textContent = res.pending.length
@@ -571,10 +618,12 @@ function decide(row, decision, rowEl){
 function registerIp(){
   spin(true);
   refreshIp().then(function(){
-    return api({action:'setip', pin:state.coachPin});
+    $('am-ip').textContent = state.ip || '—';
+    return api({action:'setip', pin:state.coachPin, apin:(state.adminPin||state.apin||undefined)});
   }).then(function(res){
     spin(false);
-    toast(res.ok ? 'Đã lưu IP phòng: '+res.ip : 'Lỗi: '+res.error);
+    if(res.ok){ $('am-note').textContent='IP phòng hiện tại đang là IP này'; toast('Đã lưu IP phòng: '+res.ip); }
+    else toast('Lỗi: '+res.error);
   }).catch(function(){ spin(false); toast('Mất mạng — thử lại'); });
 }
 
@@ -587,9 +636,10 @@ function startPin(prefix, onDone){
   var pad=$(prefix+'-pad'); pad.innerHTML='';
   ['1','2','3','4','5','6','7','8','9','XÓA','0','⌫'].forEach(function(k,i){
     var b=document.createElement('button');
-    b.className='key keyin'+((k==='XÓA'||k==='⌫')?' mut':'');
+    b.className='key keyin'+((k==='XÓA'||k==='⌫')?' mut':'')+(k==='⌫'?' bks':'');
     b.style.animationDelay=(120+i*16)+'ms';
-    b.textContent=k;
+    if(k==='⌫') b.innerHTML='<svg class="bks-i"><use href="#i-bks"/></svg>';
+    else b.textContent=k;
     b.onclick=function(){
       if(k==='XÓA'){ pinState.val=''; }
       else if(k==='⌫'){ pinState.val=pinState.val.slice(0,-1); }
