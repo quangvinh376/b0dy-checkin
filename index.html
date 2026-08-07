@@ -139,7 +139,9 @@
   .bigname{font-size:42px;line-height:1.12;letter-spacing:-.025em;margin-top:10px;word-break:break-word}
 
   /* dong trang thai ky — chu thich mono */
-  .sigline{font-family:var(--mono);font-size:12px;letter-spacing:.1em;margin-top:26px}
+  .sigline{font-family:var(--mono);font-size:12px;letter-spacing:.1em;margin-top:26px;
+           animation:rise .45s cubic-bezier(.2,.75,.2,1) both}
+  .sigline.pend{color:var(--slate);opacity:.75}
   .sigline.okc{color:var(--acid)}
   .sigline.waitc{color:var(--slate)}
   .sigline .dash{opacity:.4;margin-right:8px}
@@ -376,6 +378,15 @@ function countUp(el, to, dur, delay){
   }, delay || 0);
 }
 function spin(on){ $('busy').classList.toggle('on', !!on); $('shield').classList.toggle('on', !!on); }
+function busyLine(on){ $('busy').classList.toggle('on', !!on); }
+/* Danh thuc Apps Script TRUOC khi can den no: 'ping' roi vao nhanh default cua switch,
+   tra ve ngay va khong dung toi spreadsheet — nhung du de GAS khoi dong instance
+   trong luc coach dang go 4 so PIN. Cold start la phan cham nhat cua moi lenh ghi. */
+function warm(){
+  fetchJson(API,{method:'POST',credentials:'omit',
+    headers:{'Content-Type':'text/plain;charset=utf-8'},
+    body:JSON.stringify({action:'ping', ip:state.ip})}, 6000).catch(function(){});
+}
 function toast(msg){
   var t=$('toast'); t.textContent=msg; t.classList.add('show');
   clearTimeout(t._h); t._h=setTimeout(function(){ t.classList.remove('show'); },3200);
@@ -496,32 +507,51 @@ function doCheckin(){
   var m=state.sel;
   state.checkinRes = api({action:'checkin', name:m.name}, 0) /* khong retry checkin — tranh ghi trung */
     .catch(function(){ return {ok:false, error:'network'}; });
-  $('sg-title').textContent='Coach '+(m.coach||'')+' xác nhận';
+  $('sg-title').textContent=(m.coach ? m.coach+' xác nhận' : 'Xác nhận buổi tập');
   $('sg-sub').textContent='BUỔI THỨ '+(m.done+1)+' / '+firstName(m.name).toUpperCase();
   startPin('sg', trySign);
   show('s-sign','fwd');
+  warm();
   state.checkinRes.then(function(res){
     if(res.ok){ if(res.member) state.sel=res.member; return; }
-    if(state.screen!=='s-sign') return;
+    if(state.screen!=='s-sign' && state.screen!=='s-thanks') return;
     if(res.error==='da_checkin'){ toast(firstName(m.name)+' đã check-in hôm nay rồi'); show('s-list','back'); renderList(true); }
     else if(res.error==='wrong_ip'){ show('s-blocked'); }
     else if(res.error==='network'){ toast('Mất mạng — thử lại'); show('s-list','back'); renderList(true); }
     else { toast('Lỗi: '+res.error); show('s-list','back'); renderList(true); }
   });
 }
+/* Ky LAC QUAN: sang man cam on ngay khi go du 4 so, chu ky de "dang xac nhan" roi chot
+   khi server tra loi. Khong noi doi: buoi tap DA duoc ghi tu luc bam xac nhan, thu duy nhat
+   con cho la chu ky coach — va man hinh noi dung nhu vay. Sai PIN thi lui lai ban phim. */
 function trySign(pin){
-  spin(true);
+  thanks('pending');
+  busyLine(true);
   state.checkinRes.then(function(cres){
-    if(!cres.ok){ spin(false); return; }
+    if(!cres.ok){ busyLine(false); return; }
     return api({action:'sign', row:cres.row, pin:pin}).then(function(res){
-      spin(false);
-      if(!res.ok){
-        if(res.error==='sai_pin'){ pinError('sg','SAI PIN'); return; }
-        toast('Lỗi: '+res.error); return;
-      }
-      thanks(true, res.coach);
+      busyLine(false);
+      if(res.ok){ setSig(true, res.coach); return; }
+      if(res.error==='sai_pin'){ backToPin('SAI PIN'); return; }
+      setSig(false); toast('Lỗi: '+res.error);
     });
-  }).catch(function(){ spin(false); pinError('sg','MẤT MẠNG'); });
+  }).catch(function(){
+    busyLine(false); setSig(false);
+    toast('Mất mạng — buổi tập đã ghi, coach xác nhận sau');
+  });
+}
+function setSig(sig, coach){
+  var el=$('t-sig');
+  if(sig==='pending'){ el.innerHTML='<div class="sigline pend"><span class="dash">—</span>ĐANG XÁC NHẬN…</div>'; return; }
+  el.innerHTML = sig
+    ? '<div class="sigline okc"><span class="dash">—</span>COACH '+(coach||'').toUpperCase()+' ĐÃ XÁC NHẬN</div>'
+    : '<div class="sigline waitc"><span class="dash">—</span>CHỜ COACH XÁC NHẬN SAU</div>';
+}
+function backToPin(msg){
+  clearTimeout(state._auto);
+  startPin('sg', trySign);
+  show('s-sign','back');
+  setTimeout(function(){ pinError('sg', msg); }, 280);
 }
 function skipSign(){
   spin(true);
@@ -531,14 +561,12 @@ function skipSign(){
   }).catch(function(){ spin(false); });
 }
 /* khoanh khac hoan tat: so dem len toi buoi moi, meter Acid do day phan vua tap */
-function thanks(signed, coach){
+function thanks(sig, coach){
   var m=state.sel, d=m.done+1, left=Math.max(0, m.total-d);
   $('t-msg').textContent='Cảm ơn '+givenName(m.name)+' đã tập luyện tại B0DY';
   $('t-total').textContent='/'+m.total;
   $('t-note').textContent= left>0 ? 'Còn '+left+' buổi' : 'Hoàn thành gói tập';
-  $('t-sig').innerHTML = signed
-    ? '<div class="sigline okc"><span class="dash">—</span>COACH '+(coach||'').toUpperCase()+' ĐÃ XÁC NHẬN</div>'
-    : '<div class="sigline waitc"><span class="dash">—</span>CHỜ COACH XÁC NHẬN SAU</div>';
+  setSig(sig, coach);
   countUp($('t-num'), d, 900, 500);
   show('s-thanks','fwd');
   setMeter('t', m.done, m.total, 540);
@@ -569,7 +597,7 @@ function tryAdmin(pin){
 }
 
 /* ---------- coach ---------- */
-function openCoach(){ startPin('cp', enterApprove); show('s-cpin','fwd'); }
+function openCoach(){ startPin('cp', enterApprove); show('s-cpin','fwd'); warm(); }
 /* Mot o PIN duy nhat: thu PIN coach truoc (truong hop pho bien, 1 luot goi),
    sai thi thu tiep PIN admin roi mo man Admin. */
 function enterApprove(pin){
@@ -609,13 +637,20 @@ function renderPending(res){
   });
   show('s-approve','fwd');
 }
+function bumpPending(){
+  var n=$('ap-list').querySelectorAll('.prow').length;
+  $('ap-title').textContent = n ? 'Chờ xác nhận ('+n+')' : 'Không có buổi chờ';
+}
+/* Duyet LAC QUAN: dong bien mat ngay, ghi chay nen. Server tu choi thi tra dong ve cho cu. */
 function decide(row, decision, rowEl){
-  spin(true);
+  var parent=rowEl.parentNode, next=rowEl.nextSibling;
+  var undo=function(){ parent.insertBefore(rowEl, next); bumpPending(); };
+  rowEl.remove(); bumpPending(); busyLine(true);
   api({action:'approve', row:row, pin:state.coachPin, decision:decision}).then(function(res){
-    spin(false);
-    if(!res.ok){ toast('Lỗi: '+res.error); return; }
-    rowEl.remove(); toast(decision==='ok'?'Đã duyệt':'Đã hủy buổi này');
-  }).catch(function(){ spin(false); toast('Mất mạng — thử lại'); });
+    busyLine(false);
+    if(res.ok){ toast(decision==='ok'?'Đã duyệt':'Đã hủy buổi này'); return; }
+    undo(); toast(res.error==='khong_phai_khach_cua_ban' ? 'Đây không phải khách của bạn' : 'Lỗi: '+res.error);
+  }).catch(function(){ busyLine(false); undo(); toast('Mất mạng — thử lại'); });
 }
 function registerIp(){
   spin(true);
