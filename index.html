@@ -301,8 +301,10 @@
 <script>
 var API = 'https://script.google.com/macros/s/AKfycbwuMaBXh1pNlzzpOOOEPRqgmno5ASXCDkojrIm3czPlIQUvGpSLtoaaNsOlKquUFlugaQ/exec';
 
-var state = { ip:'', members:[], sel:null, coachPin:'', apin:'', screen:'s-list', checkinRes:null, _auto:0 };
+var state = { ip:'', members:[], sel:null, coachPin:'', apin:'', screen:'s-list', checkinRes:null, _auto:0, _ipRetried:false };
 try{ state.apin = localStorage.getItem('b0dy_apin') || ''; }catch(e){}
+try{ state.ip = localStorage.getItem('b0dy_ip') || ''; }catch(e){}
+try{ var _mc = JSON.parse(localStorage.getItem('b0dy_members')||'null'); if(_mc && _mc.length) state.members=_mc; }catch(e){}
 
 function $(id){ return document.getElementById(id); }
 /* chuyen man co huong: fwd = tien (mac dinh), back = lui */
@@ -341,38 +343,72 @@ function toast(msg){
   var t=$('toast'); t.textContent=msg; t.classList.add('show');
   clearTimeout(t._h); t._h=setTimeout(function(){ t.classList.remove('show'); },3200);
 }
-function api(body){
+/* fetch co timeout — khong bao gio treo vo han */
+function fetchJson(url, opts, timeoutMs){
+  return new Promise(function(resolve, reject){
+    var ctrl = new AbortController();
+    var to = setTimeout(function(){ ctrl.abort(); }, timeoutMs || 14000);
+    opts = opts || {}; opts.signal = ctrl.signal;
+    fetch(url, opts)
+      .then(function(r){ clearTimeout(to); return r.json(); })
+      .then(resolve, function(e){ clearTimeout(to); reject(e); });
+  });
+}
+/* goi API: timeout 14s + TU THU LAI (mac dinh 2 lan, backoff) — che cold start cua Apps Script
+   va dut mach khi dien thoai doi mang. checkin KHONG retry (tranh ghi trung). */
+function api(body, tries){
+  tries = (tries === undefined) ? 2 : tries;
   body.ip = state.ip;
   if(state.apin && !body.apin) body.apin = state.apin;
-  return fetch(API,{method:'POST',credentials:'omit',
-    headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(body)})
-    .then(function(r){ return r.json(); });
+  var payload = JSON.stringify(body);
+  return fetchJson(API,{method:'POST',credentials:'omit',
+    headers:{'Content-Type':'text/plain;charset=utf-8'},body:payload})
+    .catch(function(e){
+      if(tries > 0){
+        return new Promise(function(res){ setTimeout(res, 900); })
+          .then(function(){ return api(JSON.parse(payload), tries - 1); });
+      }
+      throw e;
+    });
 }
 
-/* ---------- khoi dong ---------- */
+/* ---------- khoi dong ----------
+   IP va danh sach deu co CACHE: hien ngay tu lan truoc, lam moi ngam phia sau.
+   Kiosk mo app la thay danh sach lien, khong doi Apps Script khoi dong. */
 function boot(){
-  spin(true);
-  fetch('https://api.ipify.org?format=json').then(function(r){return r.json();})
-    .then(function(j){ state.ip=j.ip||''; })
-    .catch(function(){ state.ip=''; })
-    .then(loadMembers);
+  refreshIp();
+  if(state.members.length){ renderList(true); refreshMembers(); }
+  else { loadMembers(); }
 }
+function refreshIp(){
+  return fetchJson('https://api.ipify.org?format=json', {}, 5000)
+    .then(function(j){ if(j.ip){ state.ip=j.ip; try{ localStorage.setItem('b0dy_ip', j.ip); }catch(e){} } })
+    .catch(function(){});
+}
+function saveMembers(list){ try{ localStorage.setItem('b0dy_members', JSON.stringify(list)); }catch(e){} }
 function loadMembers(){
   spin(true);
   api({action:'members'}).then(function(res){
     spin(false);
     if(!res.ok){
-      if(res.error==='wrong_ip'){ show('s-blocked'); return; }
+      if(res.error==='wrong_ip'){
+        /* co the IP cache da cu — cho IP moi ve roi thu dung 1 lan nua */
+        if(!state._ipRetried){ state._ipRetried=true; spin(true);
+          refreshIp().then(function(){ spin(false); loadMembers(); }); return; }
+        show('s-blocked'); return;
+      }
       toast('Lỗi tải danh sách: '+res.error); return;
     }
-    state.members=res.members;
+    state._ipRetried=false;
+    state.members=res.members; saveMembers(res.members);
     renderList(true);
     show('s-list');
-  }).catch(function(){ spin(false); toast('Mất mạng — thử lại'); });
+  }).catch(function(){ spin(false); toast('Mạng chậm — kéo xuống hoặc mở lại để thử'); });
 }
 function refreshMembers(){
   api({action:'members'}).then(function(res){
-    if(res.ok){ state.members=res.members; if(state.screen==='s-list') renderList(); }
+    if(res.ok){ state.members=res.members; saveMembers(res.members); if(state.screen==='s-list') renderList(); }
+    else if(res.error==='wrong_ip' && state.screen==='s-list' && !state.apin){ show('s-blocked'); }
   }).catch(function(){});
 }
 /* animate=true: cac dong hien lan luot (chi khi vao man, khong khi go tim kiem) */
@@ -421,7 +457,7 @@ function setMeter(prefix, done, total, delay){
 /* ---------- checkin (goi ngam, khach nhap PIN song song) ---------- */
 function doCheckin(){
   var m=state.sel;
-  state.checkinRes = api({action:'checkin', name:m.name})
+  state.checkinRes = api({action:'checkin', name:m.name}, 0) /* khong retry checkin — tranh ghi trung */
     .catch(function(){ return {ok:false, error:'network'}; });
   $('sg-title').textContent='Coach '+(m.coach||'')+' xác nhận';
   $('sg-sub').textContent='BUỔI THỨ '+(m.done+1)+' — '+firstName(m.name).toUpperCase();
@@ -531,8 +567,7 @@ function decide(row, decision, rowEl){
 }
 function registerIp(){
   spin(true);
-  fetch('https://api.ipify.org?format=json').then(function(r){return r.json();}).then(function(j){
-    state.ip=j.ip||'';
+  refreshIp().then(function(){
     return api({action:'setip', pin:state.coachPin});
   }).then(function(res){
     spin(false);
