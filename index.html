@@ -97,8 +97,11 @@
   .search::-webkit-search-cancel-button{display:none}
 
   /* danh sach ten — moi dong mang du lieu, hien lan luot */
+  /* fog den o day vung cuon: noi dung tan dan vao nen (mask trong suot, khong phai lop mau) */
   #list{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;
-        margin-top:2px;padding-bottom:12px}
+        margin-top:2px;padding-bottom:76px;
+        -webkit-mask-image:linear-gradient(to bottom,#000 0%,#000 calc(100% - 72px),transparent 100%);
+        mask-image:linear-gradient(to bottom,#000 0%,#000 calc(100% - 72px),transparent 100%)}
   .person{width:100%;display:flex;justify-content:space-between;align-items:center;gap:16px;
           background:none;border:none;border-bottom:1px solid var(--hair);
           padding:19px 4px;color:var(--paper);font-family:var(--sans);font-weight:500;
@@ -265,7 +268,7 @@
   <div class="top"><span class="brand"><svg class="lg" viewBox="0 0 132 43"><use href="#b0dy"/></svg><span class="em">—</span> CHỜ XÁC NHẬN</span>
     <button class="coachlink" onclick="registerIp()">CẬP NHẬT IP PHÒNG</button></div>
   <h1 id="ap-title">Chờ xác nhận</h1>
-  <div id="ap-list" style="flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;margin-top:10px"></div>
+  <div id="ap-list" style="flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;margin-top:10px;padding-bottom:76px;-webkit-mask-image:linear-gradient(to bottom,#000 0%,#000 calc(100% - 72px),transparent 100%);mask-image:linear-gradient(to bottom,#000 0%,#000 calc(100% - 72px),transparent 100%)"></div>
   <div class="stack"><button class="big ghost" onclick="reset()">Xong</button></div>
 </section>
 
