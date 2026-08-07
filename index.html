@@ -219,9 +219,9 @@
 
 <!-- MAN 2: XAC NHAN -->
 <section class="screen" id="s-confirm">
-  <div class="top"><span class="brand"><svg class="lg" viewBox="0 0 132 43"><use href="#b0dy"/></svg><span class="em">—</span> CHECK-IN</span></div>
+  <div class="top"><span class="brand"><svg class="lg" viewBox="0 0 132 43"><use href="#b0dy"/></svg><span class="em">/</span>CHECK-IN</span></div>
   <div class="body st">
-    <div class="label">BẠN LÀ</div>
+    <div class="label">XIN CHÀO</div>
     <div class="bigname" id="c-name"></div>
     <div class="block">
       <div class="label">HÔM NAY LÀ BUỔI THỨ</div>
@@ -231,14 +231,14 @@
     </div>
   </div>
   <div class="stack">
-    <button class="big acid" onclick="doCheckin()"><span>Xác nhận đã tập</span><svg class="bi"><use href="#i-arr"/></svg></button>
+    <button class="big acid" onclick="doCheckin()"><span>Check-in buổi tập</span><svg class="bi"><use href="#i-arr"/></svg></button>
     <button class="big ghost" onclick="show('s-list','back')">Quay lại</button>
   </div>
 </section>
 
 <!-- MAN 3: COACH KY -->
 <section class="screen" id="s-sign">
-  <div class="top"><span class="brand"><svg class="lg" viewBox="0 0 132 43"><use href="#b0dy"/></svg><span class="em">—</span> COACH XÁC NHẬN</span></div>
+  <div class="top"><span class="brand"><svg class="lg" viewBox="0 0 132 43"><use href="#b0dy"/></svg><span class="em">/</span>COACH XÁC NHẬN</span></div>
   <div class="st">
     <h1 id="sg-title">Coach xác nhận</h1>
     <div class="sub" id="sg-sub" style="margin-top:12px"></div>
@@ -247,17 +247,17 @@
     <div class="dots" id="sg-dots"></div>
     <div class="pinerr" id="sg-err"></div>
     <div class="pad" id="sg-pad"></div>
-    <button class="big ghost" onclick="skipSign()">Coach đang bận — để sau</button>
+    <button class="big ghost" onclick="skipSign()">Xác nhận sau</button>
   </div>
 </section>
 
 <!-- MAN 4: CAM ON -->
 <section class="screen" id="s-thanks">
-  <div class="top"><span class="brand"><svg class="lg" viewBox="0 0 132 43"><use href="#b0dy"/></svg><span class="em">—</span> CHECK-IN</span></div>
+  <div class="top"><span class="brand"><svg class="lg" viewBox="0 0 132 43"><use href="#b0dy"/></svg><span class="em">/</span>CHECK-IN</span></div>
   <div class="body st">
     <h1 id="t-msg"></h1>
     <div class="block">
-      <div class="label">BUỔI TẬP</div>
+      <div class="label">BUỔI TẬP THỨ</div>
       <div class="stat"><span id="t-num">0</span><i id="t-total"></i></div>
       <div class="meter"><i class="mb" id="t-mb"></i><i class="ma" id="t-ma"></i></div>
       <div class="statline" id="t-note"></div>
@@ -269,7 +269,7 @@
 
 <!-- MAN 5: COACH PIN -->
 <section class="screen" id="s-cpin">
-  <div class="top"><span class="brand"><svg class="lg" viewBox="0 0 132 43"><use href="#b0dy"/></svg><span class="em">—</span> COACH</span></div>
+  <div class="top"><span class="brand"><svg class="lg" viewBox="0 0 132 43"><use href="#b0dy"/></svg><span class="em">/</span>COACH</span></div>
   <h1>Nhập mã PIN</h1>
   <div class="pinbottom">
     <div class="dots" id="cp-dots"></div>
@@ -281,7 +281,7 @@
 
 <!-- MAN 6: HANG CHO DUYET -->
 <section class="screen" id="s-approve">
-  <div class="top"><span class="brand"><svg class="lg" viewBox="0 0 132 43"><use href="#b0dy"/></svg><span class="em">—</span> CHỜ XÁC NHẬN</span></div>
+  <div class="top"><span class="brand"><svg class="lg" viewBox="0 0 132 43"><use href="#b0dy"/></svg><span class="em">/</span>CHỜ XÁC NHẬN</span></div>
   <h1 id="ap-title">Chờ xác nhận</h1>
   <div id="ap-list" style="flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;margin-top:10px;padding-bottom:76px;-webkit-mask-image:linear-gradient(to bottom,#000 0%,#000 calc(100% - 72px),transparent 100%);mask-image:linear-gradient(to bottom,#000 0%,#000 calc(100% - 72px),transparent 100%)"></div>
   <div class="stack"><button class="big ghost" onclick="reset()">Xong</button></div>
@@ -289,7 +289,7 @@
 
 <!-- MAN ADMIN (vao tu nut COACH bang PIN admin) -->
 <section class="screen" id="s-admin">
-  <div class="top"><span class="brand"><svg class="lg" viewBox="0 0 132 43"><use href="#b0dy"/></svg><span class="em">—</span> ADMIN</span></div>
+  <div class="top"><span class="brand"><svg class="lg" viewBox="0 0 132 43"><use href="#b0dy"/></svg><span class="em">/</span>ADMIN</span></div>
   <div class="body st">
     <h1>Admin</h1>
     <div class="block">
@@ -306,7 +306,7 @@
 
 <!-- MAN CHAN IP -->
 <section class="screen" id="s-blocked">
-  <div class="top"><span class="brand"><svg class="lg" viewBox="0 0 132 43"><use href="#b0dy"/></svg><span class="em">—</span> CHECK-IN</span>
+  <div class="top"><span class="brand"><svg class="lg" viewBox="0 0 132 43"><use href="#b0dy"/></svg><span class="em">/</span>CHECK-IN</span>
     <button class="coachlink" onclick="openCoach()">COACH<svg class="ci"><use href="#i-arr"/></svg></button></div>
   <div class="body st">
     <h1>Chỉ check-in được tại phòng</h1>
@@ -319,7 +319,7 @@
 
 <!-- MAN ADMIN PIN -->
 <section class="screen" id="s-apin">
-  <div class="top"><span class="brand"><svg class="lg" viewBox="0 0 132 43"><use href="#b0dy"/></svg><span class="em">—</span> ADMIN</span></div>
+  <div class="top"><span class="brand"><svg class="lg" viewBox="0 0 132 43"><use href="#b0dy"/></svg><span class="em">/</span>ADMIN</span></div>
   <h1>Nhập PIN admin</h1>
   <div class="pinbottom">
     <div class="dots" id="ad-dots"></div>
@@ -357,6 +357,8 @@ function show(id, dir){
   el.classList.add(dir==='fwd' ? 'enter-fwd' : 'enter-back');
   state.screen = id;
 }
+/* ten dem + ten (2 tu cuoi): "Vu Sao Mai" -> "Sao Mai" */
+function givenName(full){ var p=String(full||'').trim().split(/\s+/); return p.slice(-2).join(' ')||full; }
 function firstName(full){ var p=String(full||'').trim().split(/\s+/); return p[p.length-1]||full; }
 function norm(s){ return String(s||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/đ/g,'d'); }
 function pct(done,total){ return total>0 ? Math.min(100, Math.round(done/total*100)) : 0; }
@@ -495,7 +497,7 @@ function doCheckin(){
   state.checkinRes = api({action:'checkin', name:m.name}, 0) /* khong retry checkin — tranh ghi trung */
     .catch(function(){ return {ok:false, error:'network'}; });
   $('sg-title').textContent='Coach '+(m.coach||'')+' xác nhận';
-  $('sg-sub').textContent='BUỔI THỨ '+(m.done+1)+' — '+firstName(m.name).toUpperCase();
+  $('sg-sub').textContent='BUỔI THỨ '+(m.done+1)+' / '+firstName(m.name).toUpperCase();
   startPin('sg', trySign);
   show('s-sign','fwd');
   state.checkinRes.then(function(res){
@@ -531,7 +533,7 @@ function skipSign(){
 /* khoanh khac hoan tat: so dem len toi buoi moi, meter Acid do day phan vua tap */
 function thanks(signed, coach){
   var m=state.sel, d=m.done+1, left=Math.max(0, m.total-d);
-  $('t-msg').textContent='Cảm ơn '+firstName(m.name)+' đã tập luyện tại B0DY';
+  $('t-msg').textContent='Cảm ơn '+givenName(m.name)+' đã tập luyện tại B0DY';
   $('t-total').textContent='/'+m.total;
   $('t-note').textContent= left>0 ? 'Còn '+left+' buổi' : 'Hoàn thành gói tập';
   $('t-sig').innerHTML = signed
@@ -592,7 +594,7 @@ function openAdminPanel(pin){
 }
 function renderPending(res){
   $('ap-title').textContent = res.pending.length
-    ? 'Chờ xác nhận ('+res.pending.length+')' : 'Không có buổi nào chờ';
+    ? 'Chờ xác nhận ('+res.pending.length+')' : 'Không có buổi chờ';
   var el=$('ap-list'); el.innerHTML='';
   res.pending.forEach(function(p){
     var d=document.createElement('div'); d.className='prow';
