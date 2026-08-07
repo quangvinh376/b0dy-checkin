@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="color-scheme" content="dark">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="B0DY">
@@ -19,20 +20,41 @@
     --ash:#B0B0B0; --hair:rgba(250,250,250,.14); --acid:#D4FF00; --red:#C2362F;
     --sans:'Switzer',-apple-system,'Helvetica Neue',sans-serif;
     --mono:'JetBrains Mono',Menlo,monospace;
+    color-scheme: dark;
   }
   *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
-  html{background:var(--ink)}
-  /* khoa trang co dinh — khong keo gian, khong lo nen he thong */
-  body{position:fixed;inset:0;overflow:hidden;background:var(--ink);color:var(--paper);
+  html{background:#0A0A0A}
+  /* khoa trang co dinh; ::after phu Ink ra ngoai viewport de Safari khong lo mang trang */
+  body{position:fixed;inset:0;overflow:hidden;background:#0A0A0A;color:var(--paper);
        font-family:var(--sans);font-weight:500;
        overscroll-behavior:none;-webkit-user-select:none;user-select:none}
-  @keyframes screenIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+  body::after{content:'';position:fixed;left:0;right:0;top:-140px;bottom:-240px;background:#0A0A0A;z-index:-1}
+
+  /* ============ HE CHUYEN DONG ============
+     Chuyen man co huong: tien (fwd) truot trai, lui (back) truot phai.
+     Trong man: cac tang noi dung hien theo trinh tu (label -> gia tri -> vach -> trang thai). */
   .screen{position:absolute;inset:0;display:none;flex-direction:column;
           padding:max(20px,env(safe-area-inset-top)) 20px max(16px,env(safe-area-inset-bottom))}
-  .screen.on{display:flex;animation:screenIn .26s cubic-bezier(.2,.7,.3,1)}
-  @media (prefers-reduced-motion: reduce){ .screen.on{animation:none} }
+  .screen.on{display:flex}
+  .screen.enter-fwd{animation:inF .46s cubic-bezier(.22,.85,.22,1) both}
+  .screen.enter-back{animation:inB .46s cubic-bezier(.22,.85,.22,1) both}
+  .screen.leave-fwd{animation:outF .22s ease both}
+  .screen.leave-back{animation:outB .22s ease both}
+  @keyframes inF{from{opacity:0;transform:translateX(40px)}to{opacity:1;transform:none}}
+  @keyframes inB{from{opacity:0;transform:translateX(-40px)}to{opacity:1;transform:none}}
+  @keyframes outF{to{opacity:0;transform:translateX(-26px)}}
+  @keyframes outB{to{opacity:0;transform:translateX(26px)}}
+  @keyframes rise{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+  /* tang noi dung hien lan luot */
+  .st>*{opacity:0}
+  .enter-fwd .st>*,.enter-back .st>*{animation:rise .6s cubic-bezier(.2,.75,.2,1) forwards}
+  .st>*:nth-child(1){animation-delay:.06s}
+  .st>*:nth-child(2){animation-delay:.14s}
+  .st>*:nth-child(3){animation-delay:.26s}
+  .st>*:nth-child(4){animation-delay:.36s}
+  @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}.st>*{opacity:1}}
 
-  /* header — co hairline de neo cau truc */
+  /* header */
   .top{font-family:var(--mono);font-size:11px;letter-spacing:.14em;color:var(--slate);
        display:flex;justify-content:space-between;align-items:center;
        padding:8px 2px 16px;border-bottom:1px solid var(--hair);margin-bottom:24px}
@@ -47,30 +69,39 @@
 
   /* hero du lieu: so lon — vach tien do — mot cau trang thai */
   .stat{font-family:var(--mono);font-weight:500;letter-spacing:-.03em;line-height:1;
-        font-size:64px;color:var(--paper);margin-top:10px}
+        font-size:64px;color:var(--paper);margin-top:10px;font-variant-numeric:tabular-nums}
   .stat i{font-style:normal;color:var(--graphite)}
   .meter{height:3px;background:var(--hair);margin-top:20px}
-  .meter i{display:block;height:100%;background:var(--paper);transition:width .5s cubic-bezier(.2,.7,.3,1)}
+  .meter i{display:block;height:100%;width:0;background:var(--paper);transition:width .9s cubic-bezier(.3,.7,.2,1)}
   .meter.live i{background:var(--acid)}
   .statline{font-size:15px;color:var(--ash);margin-top:14px;letter-spacing:-.005em}
   .statline .em{color:var(--graphite)}
+  /* vach cua block tu ve tu trai sang khi man hien */
+  .block{position:relative;margin-top:32px;padding-top:24px}
+  .block::before{content:'';position:absolute;top:0;left:0;width:100%;height:1px;background:var(--hair);
+                 transform:scaleX(0);transform-origin:left}
+  .enter-fwd .block::before,.enter-back .block::before{animation:draw .7s .22s cubic-bezier(.25,.8,.25,1) forwards}
+  @keyframes draw{to{transform:scaleX(1)}}
 
   /* tim kiem */
   .search{width:100%;background:none;border:none;border-bottom:1px solid var(--hair);
           border-radius:0;padding:14px 4px;margin-top:16px;color:var(--paper);
-          font-family:var(--sans);font-weight:500;font-size:18px;letter-spacing:-.01em}
-  .search:focus{outline:none;border-bottom-color:var(--slate)}
+          font-family:var(--sans);font-weight:500;font-size:18px;letter-spacing:-.01em;
+          transition:border-color .3s}
+  .search:focus{outline:none;border-bottom-color:var(--ash)}
   .search::placeholder{color:var(--graphite)}
   .search::-webkit-search-cancel-button{display:none}
 
-  /* danh sach ten — moi dong mang du lieu buoi tap */
+  /* danh sach ten — moi dong mang du lieu, hien lan luot */
   #list{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;
         margin-top:2px;padding-bottom:12px}
   .person{width:100%;display:flex;justify-content:space-between;align-items:center;gap:16px;
           background:none;border:none;border-bottom:1px solid var(--hair);
           padding:19px 4px;color:var(--paper);font-family:var(--sans);font-weight:500;
-          font-size:21px;letter-spacing:-.01em;text-align:left}
-  .person:active{background:rgba(250,250,250,.06)}
+          font-size:21px;letter-spacing:-.01em;text-align:left;
+          transition:transform .12s ease}
+  .person:active{background:rgba(250,250,250,.06);transform:scale(.985)}
+  .person.rowin{opacity:0;animation:rise .5s cubic-bezier(.2,.75,.2,1) forwards}
   .pr{display:flex;flex-direction:column;align-items:flex-end;gap:7px;flex:none}
   .pr .n{font-family:var(--mono);font-size:12px;color:var(--slate)}
   .mbar{width:44px;height:2px;background:var(--hair)}
@@ -80,8 +111,9 @@
   /* nut lon — label trai, icon monoline phai */
   .big{width:100%;display:flex;justify-content:space-between;align-items:center;gap:12px;
        border:none;border-radius:0;padding:26px 24px;font-family:var(--sans);
-       font-weight:500;font-size:21px;letter-spacing:-.01em;text-align:left}
-  .big:active{opacity:.82}
+       font-weight:500;font-size:21px;letter-spacing:-.01em;text-align:left;
+       transition:transform .12s ease,opacity .12s ease}
+  .big:active{transform:scale(.98);opacity:.9}
   .bi{width:22px;height:22px;flex:none;fill:none;stroke:currentColor;stroke-width:2;
       stroke-linecap:square;stroke-linejoin:miter}
   .acid{background:var(--acid);color:var(--ink)}
@@ -91,23 +123,26 @@
 
   .body{flex:1;display:flex;flex-direction:column;justify-content:flex-start}
   .bigname{font-size:42px;line-height:1.12;letter-spacing:-.025em;margin-top:10px;word-break:break-word}
-  .block{border-top:1px solid var(--hair);margin-top:32px;padding-top:24px}
 
-  /* dong trang thai ky — chu thich mono, KHONG giong nut */
+  /* dong trang thai ky — chu thich mono */
   .sigline{font-family:var(--mono);font-size:12px;letter-spacing:.1em;margin-top:26px}
   .sigline.okc{color:var(--acid)}
   .sigline.waitc{color:var(--slate)}
   .sigline .dash{opacity:.4;margin-right:8px}
 
-  /* PIN pad — nguyen cum neo day man hinh */
+  /* PIN pad — neo day, phim hien lan luot, sai PIN rung */
   .pinbottom{margin-top:auto;padding-top:16px}
   .dots{display:flex;gap:14px;justify-content:center;margin:0 0 6px}
-  .dot{width:14px;height:14px;border:1px solid var(--slate);border-radius:50%}
-  .dot.f{background:var(--acid);border-color:var(--acid)}
+  .dot{width:14px;height:14px;border:1px solid var(--slate);border-radius:50%;transition:background .15s,border-color .15s,transform .15s}
+  .dot.f{background:var(--acid);border-color:var(--acid);transform:scale(1.12)}
+  .dots.err{animation:shake .42s cubic-bezier(.36,.07,.19,.97)}
+  .dots.err .dot{border-color:var(--red);background:none;transform:none}
+  @keyframes shake{10%,90%{transform:translateX(-2px)}20%,80%{transform:translateX(4px)}30%,50%,70%{transform:translateX(-7px)}40%,60%{transform:translateX(7px)}}
   .pad{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:14px}
   .key{padding:20px;font-family:var(--mono);font-size:26px;background:rgba(250,250,250,.05);
-       border:none;color:var(--paper)}
-  .key:active{background:rgba(250,250,250,.14)}
+       border:none;color:var(--paper);transition:transform .1s ease}
+  .key:active{background:rgba(250,250,250,.14);transform:scale(.94)}
+  .key.keyin{opacity:0;animation:rise .38s cubic-bezier(.2,.75,.2,1) forwards}
   .key.mut{background:none;color:var(--slate);font-size:14px}
   .pinerr{font-family:var(--mono);font-size:12px;color:var(--red);height:18px;text-align:center;margin-top:8px}
 
@@ -121,12 +156,15 @@
 
   .toast{position:fixed;left:20px;right:20px;bottom:max(20px,env(safe-area-inset-bottom));
          background:var(--paper);color:var(--ink);padding:16px 18px;font-size:15px;
-         transform:translateY(150%);transition:transform .25s;z-index:50}
+         transform:translateY(150%);transition:transform .25s;z-index:70}
   .toast.show{transform:none}
-  .spin{position:fixed;inset:0;background:rgba(10,10,10,.86);display:none;
-        align-items:center;justify-content:center;z-index:40;font-family:var(--mono);
-        font-size:13px;letter-spacing:.14em;color:var(--acid)}
-  .spin.on{display:flex}
+  /* dang xu ly: vach Acid chay o mep tren — thay cho overlay chu */
+  .busy{position:fixed;top:0;left:0;right:0;height:2px;z-index:60;display:none;overflow:hidden;background:rgba(250,250,250,.06)}
+  .busy i{display:block;height:100%;width:34%;background:var(--acid);animation:busyrun 1.1s cubic-bezier(.45,.15,.55,.85) infinite}
+  @keyframes busyrun{from{transform:translateX(-110%)}to{transform:translateX(400%)}}
+  .busy.on{display:block}
+  .shield{position:fixed;inset:0;z-index:55;display:none}
+  .shield.on{display:block}
 </style>
 </head>
 <body>
@@ -156,27 +194,29 @@
 <!-- MAN 2: XAC NHAN -->
 <section class="screen" id="s-confirm">
   <div class="top"><span class="brand"><svg class="lg" viewBox="0 0 132 43"><use href="#b0dy"/></svg><span class="em">—</span> CHECK-IN</span></div>
-  <div class="body">
+  <div class="body st">
     <div class="label">BẠN LÀ</div>
     <div class="bigname" id="c-name"></div>
     <div class="block">
       <div class="label">BUỔI TẬP</div>
-      <div class="stat" id="c-stat"></div>
-      <div class="meter"><i id="c-bar" style="width:0%"></i></div>
+      <div class="stat"><span id="c-num">0</span><i id="c-total"></i></div>
+      <div class="meter"><i id="c-bar"></i></div>
       <div class="statline" id="c-note"></div>
     </div>
   </div>
   <div class="stack">
     <button class="big acid" onclick="doCheckin()"><span>Xác nhận đã tập</span><svg class="bi"><use href="#i-arr"/></svg></button>
-    <button class="big ghost" onclick="show('s-list')">Quay lại</button>
+    <button class="big ghost" onclick="show('s-list','back')">Quay lại</button>
   </div>
 </section>
 
 <!-- MAN 3: COACH KY -->
 <section class="screen" id="s-sign">
   <div class="top"><span class="brand"><svg class="lg" viewBox="0 0 132 43"><use href="#b0dy"/></svg><span class="em">—</span> COACH XÁC NHẬN</span></div>
-  <h1 id="sg-title">Coach xác nhận</h1>
-  <div class="sub" id="sg-sub" style="margin-top:12px"></div>
+  <div class="st">
+    <h1 id="sg-title">Coach xác nhận</h1>
+    <div class="sub" id="sg-sub" style="margin-top:12px"></div>
+  </div>
   <div class="pinbottom">
     <div class="dots" id="sg-dots"></div>
     <div class="pinerr" id="sg-err"></div>
@@ -188,12 +228,12 @@
 <!-- MAN 4: CAM ON -->
 <section class="screen" id="s-thanks">
   <div class="top"><span class="brand"><svg class="lg" viewBox="0 0 132 43"><use href="#b0dy"/></svg><span class="em">—</span> CHECK-IN</span></div>
-  <div class="body">
+  <div class="body st">
     <h1 id="t-msg"></h1>
     <div class="block">
       <div class="label">BUỔI TẬP</div>
-      <div class="stat" id="t-stat"></div>
-      <div class="meter live"><i id="t-bar" style="width:0%"></i></div>
+      <div class="stat"><span id="t-num">0</span><i id="t-total"></i></div>
+      <div class="meter live"><i id="t-bar"></i></div>
       <div class="statline" id="t-note"></div>
       <div id="t-sig"></div>
     </div>
@@ -201,7 +241,7 @@
   <div class="stack"><button class="big acid" onclick="reset()"><span>Đóng</span><svg class="bi"><use href="#i-x"/></svg></button></div>
 </section>
 
-<!-- MAN 5: COACH PIN (vao trang duyet) -->
+<!-- MAN 5: COACH PIN -->
 <section class="screen" id="s-cpin">
   <div class="top"><span class="brand"><svg class="lg" viewBox="0 0 132 43"><use href="#b0dy"/></svg><span class="em">—</span> COACH</span></div>
   <h1>Nhập PIN coach</h1>
@@ -209,7 +249,7 @@
     <div class="dots" id="cp-dots"></div>
     <div class="pinerr" id="cp-err"></div>
     <div class="pad" id="cp-pad"></div>
-    <button class="big ghost" onclick="show('s-list')">Quay lại</button>
+    <button class="big ghost" onclick="show('s-list','back')">Quay lại</button>
   </div>
 </section>
 
@@ -226,7 +266,7 @@
 <section class="screen" id="s-blocked">
   <div class="top"><span class="brand"><svg class="lg" viewBox="0 0 132 43"><use href="#b0dy"/></svg><span class="em">—</span> CHECK-IN</span>
     <button class="coachlink" onclick="openCoach()">COACH</button></div>
-  <div class="body">
+  <div class="body st">
     <h1>Chỉ check-in được tại phòng</h1>
     <div class="sub" style="margin-top:14px">Thiết bị này không kết nối WiFi của B0DY.<br>
     Nếu bạn đang ở phòng mà vẫn thấy thông báo này (nhà mạng đổi IP),<br>
@@ -243,11 +283,12 @@
     <div class="dots" id="ad-dots"></div>
     <div class="pinerr" id="ad-err"></div>
     <div class="pad" id="ad-pad"></div>
-    <button class="big ghost" onclick="show('s-blocked')">Quay lại</button>
+    <button class="big ghost" onclick="show('s-blocked','back')">Quay lại</button>
   </div>
 </section>
 
-<div class="spin" id="spin">ĐANG XỬ LÝ…</div>
+<div class="busy" id="busy"><i></i></div>
+<div class="shield" id="shield"></div>
 <div class="toast" id="toast"></div>
 
 <script>
@@ -257,24 +298,45 @@ var state = { ip:'', members:[], sel:null, coachPin:'', apin:'', screen:'s-list'
 try{ state.apin = localStorage.getItem('b0dy_apin') || ''; }catch(e){}
 
 function $(id){ return document.getElementById(id); }
-function show(id){
-  document.querySelectorAll('.screen').forEach(function(s){ s.classList.remove('on'); });
-  var el=$(id);
-  void el.offsetWidth; /* restart animation */
+/* chuyen man co huong: fwd = tien (mac dinh), back = lui */
+function show(id, dir){
+  dir = dir || 'fwd';
+  var cur = document.querySelector('.screen.on'), el = $(id);
+  if(cur && cur !== el){
+    cur.classList.remove('enter-fwd','enter-back');
+    cur.classList.add(dir==='fwd' ? 'leave-fwd' : 'leave-back');
+    (function(c){ setTimeout(function(){ c.classList.remove('on','leave-fwd','leave-back'); }, 230); })(cur);
+  }
+  el.classList.remove('leave-fwd','leave-back','enter-fwd','enter-back');
   el.classList.add('on');
-  state.screen=id;
+  void el.offsetWidth;
+  el.classList.add(dir==='fwd' ? 'enter-fwd' : 'enter-back');
+  state.screen = id;
 }
 function firstName(full){ var p=String(full||'').trim().split(/\s+/); return p[p.length-1]||full; }
 function norm(s){ return String(s||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/đ/g,'d'); }
 function pct(done,total){ return total>0 ? Math.min(100, Math.round(done/total*100)) : 0; }
-function spin(on){ $('spin').classList.toggle('on', !!on); }
+/* so dem len kieu dong ho do */
+function countUp(el, to, dur, delay){
+  el.textContent = '0';
+  setTimeout(function(){
+    var t0 = performance.now();
+    (function f(t){
+      var p = Math.min(1, (t - t0) / dur);
+      p = 1 - Math.pow(1 - p, 3);
+      el.textContent = Math.round(to * p);
+      if(p < 1) requestAnimationFrame(f);
+    })(t0);
+  }, delay || 0);
+}
+function spin(on){ $('busy').classList.toggle('on', !!on); $('shield').classList.toggle('on', !!on); }
 function toast(msg){
   var t=$('toast'); t.textContent=msg; t.classList.add('show');
   clearTimeout(t._h); t._h=setTimeout(function(){ t.classList.remove('show'); },3200);
 }
 function api(body){
   body.ip = state.ip;
-  if(state.apin && !body.apin) body.apin = state.apin; /* admin da mo khoa -> vuot khoa IP */
+  if(state.apin && !body.apin) body.apin = state.apin;
   return fetch(API,{method:'POST',credentials:'omit',
     headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(body)})
     .then(function(r){ return r.json(); });
@@ -297,30 +359,31 @@ function loadMembers(){
       toast('Lỗi tải danh sách: '+res.error); return;
     }
     state.members=res.members;
-    renderList();
+    renderList(true);
     show('s-list');
   }).catch(function(){ spin(false); toast('Mất mạng — thử lại'); });
 }
-/* lam moi ngam — khong spinner, dung cho luc quay ve danh sach */
 function refreshMembers(){
   api({action:'members'}).then(function(res){
     if(res.ok){ state.members=res.members; if(state.screen==='s-list') renderList(); }
   }).catch(function(){});
 }
-function renderList(){
+/* animate=true: cac dong hien lan luot (chi khi vao man, khong khi go tim kiem) */
+function renderList(animate){
   var q=norm($('q').value);
   var el=$('list'); el.innerHTML='';
   var shown=0;
   state.members.forEach(function(m){
     if(q && norm(m.name).indexOf(q)<0) return;
-    shown++;
     var b=document.createElement('button');
-    b.className='person';
+    b.className='person'+(animate?' rowin':'');
+    if(animate) b.style.animationDelay = Math.min(shown*24, 280)+'ms';
     b.innerHTML='<span>'+m.name+'</span>'
       +'<span class="pr"><span class="n">'+m.done+'/'+m.total+'</span>'
       +'<span class="mbar"><i style="width:'+pct(m.done,m.total)+'%"></i></span></span>';
-    b.onclick=function(){ state.sel=m; fillConfirm(m); show('s-confirm'); };
+    b.onclick=function(){ state.sel=m; fillConfirm(m); show('s-confirm','fwd'); };
     el.appendChild(b);
+    shown++;
   });
   if(!shown){
     var d=document.createElement('div'); d.className='empty';
@@ -328,14 +391,14 @@ function renderList(){
     el.appendChild(d);
   }
 }
+/* man xac nhan: so dem len + meter do, khop nhip voi cac tang hien */
 function fillConfirm(m){
   $('c-name').textContent=m.name;
-  $('c-stat').innerHTML=m.done+'<i>/'+m.total+'</i>';
+  $('c-total').textContent='/'+m.total;
   $('c-note').innerHTML='Còn '+m.left+' buổi <span class="em">·</span> Coach '+(m.coach||'—');
-  $('c-bar').style.width='0%';
-  requestAnimationFrame(function(){ requestAnimationFrame(function(){
-    $('c-bar').style.width=pct(m.done,m.total)+'%';
-  });});
+  countUp($('c-num'), m.done, 650, 420);
+  var bar=$('c-bar'); bar.style.transition='none'; bar.style.width='0';
+  setTimeout(function(){ bar.style.transition=''; bar.style.width=pct(m.done,m.total)+'%'; }, 460);
 }
 
 /* ---------- checkin (goi ngam, khach nhap PIN song song) ---------- */
@@ -346,14 +409,14 @@ function doCheckin(){
   $('sg-title').textContent='Coach '+(m.coach||'')+' xác nhận';
   $('sg-sub').textContent='BUỔI THỨ '+(m.done+1)+' — '+firstName(m.name).toUpperCase();
   startPin('sg', trySign);
-  show('s-sign');
+  show('s-sign','fwd');
   state.checkinRes.then(function(res){
     if(res.ok){ if(res.member) state.sel=res.member; return; }
     if(state.screen!=='s-sign') return;
-    if(res.error==='da_checkin'){ toast(firstName(m.name)+' đã check-in hôm nay rồi'); show('s-list'); renderList(); }
+    if(res.error==='da_checkin'){ toast(firstName(m.name)+' đã check-in hôm nay rồi'); show('s-list','back'); renderList(true); }
     else if(res.error==='wrong_ip'){ show('s-blocked'); }
-    else if(res.error==='network'){ toast('Mất mạng — thử lại'); show('s-list'); renderList(); }
-    else { toast('Lỗi: '+res.error); show('s-list'); renderList(); }
+    else if(res.error==='network'){ toast('Mất mạng — thử lại'); show('s-list','back'); renderList(true); }
+    else { toast('Lỗi: '+res.error); show('s-list','back'); renderList(true); }
   });
 }
 function trySign(pin){
@@ -377,31 +440,30 @@ function skipSign(){
     if(cres.ok) thanks(false);
   }).catch(function(){ spin(false); });
 }
+/* khoanh khac hoan tat: so dem len toi buoi moi, meter Acid do day phan vua tap */
 function thanks(signed, coach){
   var m=state.sel, d=m.done+1, left=Math.max(0, m.total-d);
   $('t-msg').textContent='Cảm ơn '+firstName(m.name)+' đã tập luyện tại B0DY';
-  $('t-stat').innerHTML=d+'<i>/'+m.total+'</i>';
+  $('t-total').textContent='/'+m.total;
   $('t-note').textContent= left>0 ? 'Còn '+left+' buổi' : 'Hoàn thành gói tập';
   $('t-sig').innerHTML = signed
     ? '<div class="sigline okc"><span class="dash">—</span>COACH '+(coach||'').toUpperCase()+' ĐÃ XÁC NHẬN</div>'
     : '<div class="sigline waitc"><span class="dash">—</span>CHỜ COACH XÁC NHẬN SAU</div>';
-  $('t-bar').style.width='0%';
-  show('s-thanks');
-  requestAnimationFrame(function(){ requestAnimationFrame(function(){
-    $('t-bar').style.width=pct(d,m.total)+'%';
-  });});
+  countUp($('t-num'), d, 850, 480);
+  var bar=$('t-bar'); bar.style.transition='none'; bar.style.width='0';
+  show('s-thanks','fwd');
+  setTimeout(function(){ bar.style.transition=''; bar.style.width=pct(d,m.total)+'%'; }, 520);
   clearTimeout(state._auto); state._auto=setTimeout(reset, 20000);
 }
-/* quay ve danh sach: hien ngay tu cache, lam moi ngam phia sau */
 function reset(){
   clearTimeout(state._auto); state.sel=null; state.checkinRes=null;
   $('q').value='';
-  renderList(); show('s-list');
+  renderList(true); show('s-list','fwd');
   refreshMembers();
 }
 
-/* ---------- admin: truy cap tu xa ---------- */
-function openAdmin(){ startPin('ad', tryAdmin); show('s-apin'); }
+/* ---------- admin ---------- */
+function openAdmin(){ startPin('ad', tryAdmin); show('s-apin','fwd'); }
 function tryAdmin(pin){
   spin(true);
   api({action:'admin', apin:pin}).then(function(res){
@@ -417,7 +479,7 @@ function tryAdmin(pin){
 }
 
 /* ---------- coach ---------- */
-function openCoach(){ startPin('cp', enterApprove); show('s-cpin'); }
+function openCoach(){ startPin('cp', enterApprove); show('s-cpin','fwd'); }
 function enterApprove(pin){
   state.coachPin=pin; spin(true);
   api({action:'pending', pin:pin}).then(function(res){
@@ -441,7 +503,7 @@ function renderPending(res){
     wrap.appendChild(noB); wrap.appendChild(okB); d.appendChild(wrap);
     el.appendChild(d);
   });
-  show('s-approve');
+  show('s-approve','fwd');
 }
 function decide(row, decision, rowEl){
   spin(true);
@@ -469,9 +531,10 @@ function startPin(prefix, onDone){
   $(prefix+'-err').textContent='';
   renderDots();
   var pad=$(prefix+'-pad'); pad.innerHTML='';
-  ['1','2','3','4','5','6','7','8','9','XÓA','0','⌫'].forEach(function(k){
+  ['1','2','3','4','5','6','7','8','9','XÓA','0','⌫'].forEach(function(k,i){
     var b=document.createElement('button');
-    b.className='key'+((k==='XÓA'||k==='⌫')?' mut':'');
+    b.className='key keyin'+((k==='XÓA'||k==='⌫')?' mut':'');
+    b.style.animationDelay=(120+i*16)+'ms';
     b.textContent=k;
     b.onclick=function(){
       if(k==='XÓA'){ pinState.val=''; }
@@ -481,23 +544,28 @@ function startPin(prefix, onDone){
       renderDots();
       if(pinState.val.length===4){
         var v=pinState.val;
-        setTimeout(function(){ pinState.onDone(v); },120);
+        setTimeout(function(){ pinState.onDone(v); },140);
       }
     };
     pad.appendChild(b);
   });
 }
 function renderDots(){
-  var el=$(pinState.prefix+'-dots'); el.innerHTML='';
+  var el=$(pinState.prefix+'-dots'); el.classList.remove('err'); el.innerHTML='';
   for(var i=0;i<4;i++){
     var d=document.createElement('div');
     d.className='dot'+(i<pinState.val.length?' f':'');
     el.appendChild(d);
   }
 }
+/* sai PIN: cum cham rung ngang + vien do, roi tu xoa */
 function pinError(prefix,msg){
   $(prefix+'-err').textContent=msg;
-  pinState.val=''; renderDots();
+  pinState.val='';
+  var el=$(prefix+'-dots'); el.innerHTML='';
+  for(var i=0;i<4;i++){ var d=document.createElement('div'); d.className='dot'; el.appendChild(d); }
+  el.classList.add('err');
+  setTimeout(function(){ el.classList.remove('err'); }, 500);
 }
 
 boot();
