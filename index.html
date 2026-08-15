@@ -121,6 +121,10 @@
   .mbar{width:44px;height:2px;background:var(--hair)}
   .mbar i{display:block;height:100%;background:var(--ash)}
   .empty{font-family:var(--mono);font-size:12px;color:var(--graphite);letter-spacing:.08em;padding:26px 4px}
+  /* canh bao du lieu cu — KHONG BAO GIO duoc im lang trinh cache nhu la so lieu that */
+  .stale{display:none;font-family:var(--mono);font-size:10px;line-height:1.5;letter-spacing:.09em;
+         color:var(--red);padding:10px 4px 0}
+  .stale.on{display:block}
 
   /* nut lon — label trai, icon monoline phai */
   .big{width:100%;display:flex;justify-content:space-between;align-items:center;gap:12px;
@@ -216,6 +220,7 @@
     <button class="coachlink" onclick="openCoach()">COACH<svg class="ci"><use href="#i-arr"/></svg></button></div>
   <h1>Chọn tên của bạn</h1>
   <input class="search" id="q" type="search" placeholder="Tìm tên…" autocomplete="off" autocorrect="off" oninput="renderList()">
+  <div class="stale" id="stale"></div>
   <div id="list"></div>
 </section>
 
@@ -434,6 +439,14 @@ function refreshIp(){
     .catch(function(){});
 }
 function saveMembers(list){ try{ localStorage.setItem('b0dy_members', JSON.stringify(list)); }catch(e){} }
+function clearApin(){ state.apin=''; try{ localStorage.removeItem('b0dy_apin'); }catch(e){} }
+/* Cache chi duoc phep lam cho app MO NHANH, khong duoc phep thay the su that.
+   Lam moi that bai -> phai noi ra, neu khong so buoi cu se dung yen hang ngay troi. */
+function staleMark(on, msg){
+  var el=$('stale'); if(!el) return;
+  el.textContent = on ? (msg || 'DANH SÁCH CHƯA CẬP NHẬT ĐƯỢC — SỐ BUỔI ĐANG LÀ SỐ CŨ') : '';
+  el.classList.toggle('on', !!on);
+}
 function loadMembers(){
   spin(true);
   api({action:'members'}).then(function(res){
@@ -445,9 +458,11 @@ function loadMembers(){
           refreshIp().then(function(){ spin(false); loadMembers(); }); return; }
         show('s-blocked'); return;
       }
-      toast('Lỗi tải danh sách: '+res.error); return;
+      toast('Lỗi tải danh sách: '+res.error);
+      staleMark(true, 'KHÔNG ĐỌC ĐƯỢC DANH SÁCH (' + res.error + ') — SỐ BUỔI ĐANG LÀ SỐ CŨ');
+      return;
     }
-    state._ipRetried=false;
+    state._ipRetried=false; staleMark(false);
     state.members=res.members; saveMembers(res.members);
     renderList(true);
     show('s-list');
@@ -455,9 +470,20 @@ function loadMembers(){
 }
 function refreshMembers(){
   api({action:'members'}).then(function(res){
-    if(res.ok){ state.members=res.members; saveMembers(res.members); if(state.screen==='s-list') renderList(); }
-    else if(res.error==='wrong_ip' && state.screen==='s-list' && !state.apin){ show('s-blocked'); }
-  }).catch(function(){});
+    if(res.ok){
+      state.members=res.members; saveMembers(res.members); staleMark(false);
+      if(state.screen==='s-list') renderList();
+      return;
+    }
+    if(res.error==='wrong_ip'){
+      /* apin luu san da het hieu luc (vi du admin doi PIN) — bo di, va KHONG duoc
+         tiep tuc trinh cache nhu du lieu that: may nay khong co quyen doc danh sach. */
+      if(state.apin) clearApin();
+      if(state.screen==='s-list') show('s-blocked');
+      return;
+    }
+    staleMark(true, 'KHÔNG ĐỌC ĐƯỢC DANH SÁCH (' + res.error + ') — SỐ BUỔI ĐANG LÀ SỐ CŨ');
+  }).catch(function(){ staleMark(true); });
 }
 /* animate=true: cac dong hien lan luot (chi khi vao man, khong khi go tim kiem) */
 function renderList(animate){
