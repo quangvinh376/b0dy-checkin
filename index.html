@@ -343,7 +343,7 @@
 <script>
 var API = 'https://script.google.com/macros/s/AKfycbwuMaBXh1pNlzzpOOOEPRqgmno5ASXCDkojrIm3czPlIQUvGpSLtoaaNsOlKquUFlugaQ/exec';
 
-var state = { ip:'', members:[], sel:null, coachPin:'', adminPin:'', apin:'', screen:'s-list', checkinRes:null, _auto:0, _ipRetried:false };
+var state = { ip:'', members:[], sel:null, coachPin:'', adminPin:'', apin:'', screen:'s-list', checkinRes:null, _auto:0, _ipRetried:false, _touch:0, _synced:0, _lastTry:0, _syncing:false };
 try{ state.apin = localStorage.getItem('b0dy_apin') || ''; }catch(e){}
 try{ state.ip = localStorage.getItem('b0dy_ip') || ''; }catch(e){}
 try{ var _mc = JSON.parse(localStorage.getItem('b0dy_members')||'null'); if(_mc && _mc.length) state.members=_mc; }catch(e){}
@@ -407,28 +407,69 @@ function fetchJson(url, opts, timeoutMs){
       .then(resolve, function(e){ clearTimeout(to); reject(e); });
   });
 }
-/* goi API: timeout 14s + TU THU LAI (mac dinh 2 lan, backoff) — che cold start cua Apps Script
-   va dut mach khi dien thoai doi mang. checkin KHONG retry (tranh ghi trung). */
-function api(body, tries){
-  tries = (tries === undefined) ? 2 : tries;
+/* goi API: timeout 14s + TU THU LAI giai theo cap so nhan (0,6s -> 1,2s -> 2,4s -> 4,8s),
+   co HAN CHOT TONG 15s de khong bat nguoi dung cho vo tan.
+   Ly do phai dai the: khi iPhone vua thuc day, WiFi chua bat lai kip nen fetch HONG TUC THI —
+   ngan sach cu (2 lan x 0,9s) chay het trong chua toi 2 giay, truoc ca khi mang kip song.
+   RIENG checkin van goi voi tries=0 (tranh ghi trung buoi tap). */
+function api(body, tries, wait, t0){
+  tries = (tries === undefined) ? 4 : tries;
+  wait = wait || 600;
+  t0 = t0 || Date.now();
   body.ip = state.ip;
   if(state.apin && !body.apin) body.apin = state.apin;
   var payload = JSON.stringify(body);
   return fetchJson(API,{method:'POST',credentials:'omit',
     headers:{'Content-Type':'text/plain;charset=utf-8'},body:payload})
     .catch(function(e){
-      if(tries > 0){
-        return new Promise(function(res){ setTimeout(res, 900); })
-          .then(function(){ return api(JSON.parse(payload), tries - 1); });
+      if(tries > 0 && (Date.now() - t0) < 15000){
+        return new Promise(function(res){ setTimeout(res, wait); })
+          .then(function(){ return api(JSON.parse(payload), tries - 1, Math.min(wait * 2, 6000), t0); });
       }
       throw e;
     });
 }
 
+/* ---------- NHIP TIM: app tu giu ket noi song ----------
+   Truoc day app chi cham may chu 2 luc: mo trang, va ngay sau khi co nguoi check-in.
+   De lau khong ai dung -> moi thu nguoi lanh, va cu cham dau tien cua khach phai ganh het.
+   LUU Y iOS: setInterval bi DONG BANG khi man hinh iPhone tat, nen hen gio mot minh la khong du —
+   bat buoc phai co them moi 'visibilitychange' (man hinh sang lai) va 'online' (mang noi lai). */
+var SYNC_MS = 5 * 60 * 1000;   /* ranh thi cu 5 phut lam moi mot lan */
+var IDLE_MS = 60 * 1000;       /* chi lam moi khi khong ai dung trong 1 phut */
+function touch(){ state._touch = Date.now(); }
+function syncNow(force){
+  var now = Date.now();
+  if(state._syncing) return;
+  if(now - (state._lastTry || 0) < 3000) return;   /* chan doi: luc mo trang, pageshow va boot() cung ban mot luc */
+  state._lastTry = now;
+  /* dang o man chan: co the chi la IP nha mang doi — thu lay IP moi roi vao lai */
+  if(state.screen === 's-blocked'){
+    if(!force) return;
+    state._syncing = true; state._ipRetried = false;
+    loadMembers().then(done, done); return;
+  }
+  if(state.screen !== 's-list') return;            /* dung cat ngang nguoi dang thao tac */
+  if(!force){
+    if(now - (state._touch || 0) < IDLE_MS) return;   /* dang co nguoi bam */
+    if(now - (state._synced || 0) < SYNC_MS) return;  /* vua lam moi xong */
+  }
+  state._syncing = true;
+  refreshIp().then(function(){ return refreshMembers(); }).then(done, done);
+  function done(){ state._syncing = false; state._synced = Date.now(); }
+}
+document.addEventListener('visibilitychange', function(){ if(!document.hidden) syncNow(true); });
+window.addEventListener('pageshow', function(){ syncNow(true); });
+window.addEventListener('online', function(){ syncNow(true); });
+document.addEventListener('pointerdown', touch, true);
+document.addEventListener('input', touch, true);
+setInterval(function(){ syncNow(false); }, 60 * 1000);
+
 /* ---------- khoi dong ----------
    IP va danh sach deu co CACHE: hien ngay tu lan truoc, lam moi ngam phia sau.
    Kiosk mo app la thay danh sach lien, khong doi Apps Script khoi dong. */
 function boot(){
+  state._lastTry = Date.now();   /* de 'pageshow' luc mo trang khong ban trung mot lan nua */
   refreshIp();
   if(state.members.length){ renderList(true); refreshMembers(); }
   else { loadMembers(); }
@@ -449,7 +490,7 @@ function staleMark(on, msg){
 }
 function loadMembers(){
   spin(true);
-  api({action:'members'}).then(function(res){
+  return api({action:'members'}).then(function(res){
     spin(false);
     if(!res.ok){
       if(res.error==='wrong_ip'){
@@ -469,7 +510,7 @@ function loadMembers(){
   }).catch(function(){ spin(false); toast('Mạng chậm — kéo xuống hoặc mở lại để thử'); });
 }
 function refreshMembers(){
-  api({action:'members'}).then(function(res){
+  return api({action:'members'}).then(function(res){
     if(res.ok){
       state.members=res.members; saveMembers(res.members); staleMark(false);
       if(state.screen==='s-list') renderList();
