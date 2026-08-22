@@ -377,6 +377,8 @@ function show(id, dir){
 function givenName(full){ var p=String(full||'').trim().split(/\s+/); return p.slice(-2).join(' ')||full; }
 function firstName(full){ var p=String(full||'').trim().split(/\s+/); return p[p.length-1]||full; }
 function norm(s){ return String(s||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/đ/g,'d'); }
+function dayKey(d){ d=d||new Date(); var m=d.getMonth()+1, x=d.getDate();
+  return d.getFullYear()+'-'+('0'+m).slice(-2)+'-'+('0'+x).slice(-2); }
 function pct(done,total){ return total>0 ? Math.min(100, Math.round(done/total*100)) : 0; }
 /* so dem len kieu dong ho do */
 function countUp(el, to, dur, delay){
@@ -581,8 +583,10 @@ function setMeter(prefix, done, total, delay){
 /* ---------- checkin (goi ngam, khach nhap PIN song song) ---------- */
 function doCheckin(){
   var m=state.sel;
+  var dk = dayKey();
   state.checkinRes = api({action:'checkin', name:m.name}, 0) /* khong retry checkin — tranh ghi trung */
-    .catch(function(){ return {ok:false, error:'network'}; });
+    .then(function(r){ if(r) r.day=dk; return r; })
+    .catch(function(){ return {ok:false, error:'network', day:dk}; });
   $('sg-title').textContent=(m.coach ? m.coach+' xác nhận' : 'Xác nhận buổi tập');
   $('sg-sub').textContent='BUỔI THỨ '+(m.done+1)+' / '+firstName(m.name).toUpperCase();
   startPin('sg', trySign);
@@ -605,11 +609,12 @@ function trySign(pin){
   busyLine(true);
   state.checkinRes.then(function(cres){
     if(!cres.ok){ busyLine(false); return; }
-    return api({action:'sign', row:cres.row, pin:pin}).then(function(res){
+    return api({action:'sign', row:cres.row, name:(state.sel&&state.sel.name)||'', date:cres.day||dayKey(), pin:pin}).then(function(res){
       busyLine(false);
       if(res.ok){ setSig(true, res.coach); return; }
       if(res.error==='sai_pin'){ backToPin('SAI PIN'); return; }
       if(res.error==='khong_phai_khach_cua_ban'){ backToPin('KHÔNG PHẢI KHÁCH CỦA BẠN'); return; }
+      if(res.error==='sai_dong'){ setSig(false); toast('Không tìm thấy buổi vừa ghi — coach xác nhận lại ở mục COACH'); return; }
       setSig(false); toast('Lỗi: '+res.error);
     });
   }).catch(function(){
@@ -705,9 +710,9 @@ function renderPending(res){
     var d=document.createElement('div'); d.className='prow';
     d.innerHTML='<div><div class="who">'+p.name+'</div><div class="meta">'+p.date+' · '+p.note+'</div></div>';
     var okB=document.createElement('button'); okB.className='mini ok'; okB.textContent='DUYỆT';
-    okB.onclick=function(){ decide(p.row,'ok',d); };
+    okB.onclick=function(){ decide(p,'ok',d); };
     var noB=document.createElement('button'); noB.className='mini no'; noB.textContent='HỦY';
-    noB.onclick=function(){ decide(p.row,'reject',d); };
+    noB.onclick=function(){ decide(p,'reject',d); };
     var wrap=document.createElement('div'); wrap.style.display='flex'; wrap.style.gap='8px';
     wrap.appendChild(noB); wrap.appendChild(okB); d.appendChild(wrap);
     el.appendChild(d);
@@ -719,14 +724,15 @@ function bumpPending(){
   $('ap-title').textContent = n ? 'Chờ xác nhận ('+n+')' : 'Không có buổi chờ';
 }
 /* Duyet LAC QUAN: dong bien mat ngay, ghi chay nen. Server tu choi thi tra dong ve cho cu. */
-function decide(row, decision, rowEl){
+function decide(item, decision, rowEl){
   var parent=rowEl.parentNode, next=rowEl.nextSibling;
   var undo=function(){ parent.insertBefore(rowEl, next); bumpPending(); };
   rowEl.remove(); bumpPending(); busyLine(true);
-  api({action:'approve', row:row, pin:state.coachPin, decision:decision}).then(function(res){
+  api({action:'approve', row:item.row, name:item.name, date:item.key, pin:state.coachPin, decision:decision}).then(function(res){
     busyLine(false);
     if(res.ok){ toast(decision==='ok'?'Đã duyệt':'Đã hủy buổi này'); return; }
-    undo(); toast(res.error==='khong_phai_khach_cua_ban' ? 'Đây không phải khách của bạn' : 'Lỗi: '+res.error);
+    undo(); toast(res.error==='khong_phai_khach_cua_ban' ? 'Đây không phải khách của bạn'
+      : res.error==='sai_dong' ? 'Buổi này không còn trong danh sách chờ — tải lại' : 'Lỗi: '+res.error);
   }).catch(function(){ busyLine(false); undo(); toast('Mất mạng — thử lại'); });
 }
 function registerIp(){
