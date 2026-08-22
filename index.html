@@ -352,12 +352,21 @@ function $(id){ return document.getElementById(id); }
 /* chuyen man co huong: fwd = tien (mac dinh), back = lui */
 function show(id, dir){
   dir = dir || 'fwd';
-  var cur = document.querySelector('.screen.on'), el = $(id);
+  var el = $(id);
+  /* man dang hien lay tu state, KHONG dung querySelector('.screen.on'):
+     giua hai lan chuyen man cach nhau <230ms thi ca hai man deu con .on,
+     querySelector se tra ve man dung truoc trong DOM -> chuyen man that bai */
+  var cur = (state.screen && $(state.screen)) || document.querySelector('.screen.on');
   if(cur && cur !== el){
+    if(cur._t){ clearTimeout(cur._t); cur._t = 0; }
     cur.classList.remove('enter-fwd','enter-back');
     cur.classList.add(dir==='fwd' ? 'leave-fwd' : 'leave-back');
-    (function(c){ setTimeout(function(){ c.classList.remove('on','leave-fwd','leave-back'); }, 230); })(cur);
+    cur._t = (function(c){ return setTimeout(function(){
+      c.classList.remove('on','leave-fwd','leave-back'); c._t = 0;
+    }, 230); })(cur);
   }
+  /* neu man nay dang trong luc bi go .on thi huy lenh go do di */
+  if(el._t){ clearTimeout(el._t); el._t = 0; }
   el.classList.remove('leave-fwd','leave-back','enter-fwd','enter-back');
   el.classList.add('on');
   void el.offsetWidth;
@@ -600,6 +609,7 @@ function trySign(pin){
       busyLine(false);
       if(res.ok){ setSig(true, res.coach); return; }
       if(res.error==='sai_pin'){ backToPin('SAI PIN'); return; }
+      if(res.error==='khong_phai_khach_cua_ban'){ backToPin('KHÔNG PHẢI KHÁCH CỦA BẠN'); return; }
       setSig(false); toast('Lỗi: '+res.error);
     });
   }).catch(function(){
