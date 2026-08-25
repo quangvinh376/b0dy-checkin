@@ -423,19 +423,21 @@ function fetchJson(url, opts, timeoutMs){
    Ly do phai dai the: khi iPhone vua thuc day, WiFi chua bat lai kip nen fetch HONG TUC THI —
    ngan sach cu (2 lan x 0,9s) chay het trong chua toi 2 giay, truoc ca khi mang kip song.
    RIENG checkin van goi voi tries=0 (tranh ghi trung buoi tap). */
-function api(body, tries, wait, t0){
+function api(body, tries, wait, t0, tmo){
   tries = (tries === undefined) ? 4 : tries;
   wait = wait || 600;
   t0 = t0 || Date.now();
+  tmo = tmo || 14000;
   body.ip = state.ip;
   if(state.apin && !body.apin) body.apin = state.apin;
   var payload = JSON.stringify(body);
   return fetchJson(API,{method:'POST',credentials:'omit',
-    headers:{'Content-Type':'text/plain;charset=utf-8'},body:payload})
+    headers:{'Content-Type':'text/plain;charset=utf-8'},body:payload}, tmo)
     .catch(function(e){
-      if(tries > 0 && (Date.now() - t0) < 15000){
+      /* han chot tong = han cho cua mot luot + 1s, de con kip mot lan thu lai */
+      if(tries > 0 && (Date.now() - t0) < (tmo + 1000)){
         return new Promise(function(res){ setTimeout(res, wait); })
-          .then(function(){ return api(JSON.parse(payload), tries - 1, Math.min(wait * 2, 6000), t0); });
+          .then(function(){ return api(JSON.parse(payload), tries - 1, Math.min(wait * 2, 6000), t0, tmo); });
       }
       throw e;
     });
@@ -684,15 +686,17 @@ function openCoach(){ startPin('cp', enterApprove); show('s-cpin','fwd'); warm()
    sai thi thu tiep PIN admin roi mo man Admin. */
 function enterApprove(pin){
   state.coachPin=pin; spin(true);
-  api({action:'pending', pin:pin}).then(function(res){
+  /* 30s: lenh nay doc ca MEMBERS lan SESSION LOG, may chu nguoi co the mat >14s.
+     Truoc day dung han cho 14s nen coach nhap PIN dung van bi bao "MAT MANG". */
+  api({action:'pending', pin:pin}, 2, 800, 0, 30000).then(function(res){
     if(res.ok){ spin(false); renderPending(res); return; }
     if(res.error!=='sai_pin'){ spin(false); pinError('cp', res.error); return; }
-    return api({action:'admin', apin:pin}).then(function(ad){
+    return api({action:'admin', apin:pin}, 2, 800, 0, 30000).then(function(ad){
       spin(false);
       if(ad && ad.ok){ openAdminPanel(pin); return; }
       pinError('cp','SAI PIN');
     });
-  }).catch(function(){ spin(false); pinError('cp','MẤT MẠNG'); });
+  }).catch(function(){ spin(false); pinError('cp','MÁY CHỦ CHẬM — THỬ LẠI'); });
 }
 /* man Admin: mot chi so song (IP thiet bi) + mot hanh dong (luu IP phong) */
 function openAdminPanel(pin){
