@@ -586,7 +586,7 @@ function setMeter(prefix, done, total, delay){
 function doCheckin(){
   var m=state.sel;
   var dk = dayKey();
-  state.checkinRes = api({action:'checkin', name:m.name}, 0) /* khong retry checkin — tranh ghi trung */
+  state.checkinRes = api({action:'checkin', name:m.name}, 0, 600, 0, 35000) /* khong retry checkin — tranh ghi trung */
     .then(function(r){ if(r) r.day=dk; return r; })
     .catch(function(){ return {ok:false, error:'network', day:dk}; });
   $('sg-title').textContent=(m.coach ? m.coach+' xác nhận' : 'Xác nhận buổi tập');
