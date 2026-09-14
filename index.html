@@ -341,7 +341,7 @@
 <div class="toast" id="toast"></div>
 
 <script>
-var API = 'https://script.google.com/macros/s/AKfycbwuMaBXh1pNlzzpOOOEPRqgmno5ASXCDkojrIm3czPlIQUvGpSLtoaaNsOlKquUFlugaQ/exec';
+var API = 'https://script.google.com/macros/s/AKfycbwuMaBXh1pNlzzpOOOEPRqgmno5ASXCDkojrIm3czPlIQUvGpSLtoaaNsOlKquUFlugaQ/exec'; var API_WK = 'https://b0dy-kiosk-api.little-bonus-1d87.workers.dev/';
 
 var state = { ip:'', members:[], sel:null, coachPin:'', adminPin:'', apin:'', screen:'s-list', checkinRes:null, _auto:0, _ipRetried:false, _touch:0, _synced:0, _lastTry:0, _syncing:false };
 try{ state.apin = localStorage.getItem('b0dy_apin') || ''; }catch(e){}
@@ -501,9 +501,9 @@ function staleMark(on, msg){
   el.textContent = on ? (msg || 'DANH SÁCH CHƯA CẬP NHẬT ĐƯỢC — SỐ BUỔI ĐANG LÀ SỐ CŨ') : '';
   el.classList.toggle('on', !!on);
 }
-function loadMembers(){
+function apiMembers(){ return fetchJson(API_WK,{method:'POST',credentials:'omit',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action:'members'})}, 8000).then(function(r){ if(r && r.ok) return r; throw new Error((r && r.error) || 'wk'); }).catch(function(){ return api({action:'members'}, 4, 800, 0, 30000); }); } function loadMembers(){
   spin(true);
-  return api({action:'members'}, 4, 800, 0, 30000).then(function(res){
+  return apiMembers().then(function(res){
     spin(false);
     if(!res.ok){
       if(res.error==='wrong_ip'){
@@ -523,7 +523,7 @@ function loadMembers(){
   }).catch(function(){ spin(false); toast('Mạng chậm — kéo xuống hoặc mở lại để thử'); });
 }
 function refreshMembers(){
-  return api({action:'members'}, 4, 800, 0, 30000).then(function(res){
+  return apiMembers().then(function(res){
     if(res.ok){
       state.members=res.members; saveMembers(res.members); staleMark(false);
       if(state.screen==='s-list') renderList();
