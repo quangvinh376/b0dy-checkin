@@ -503,7 +503,7 @@ function staleMark(on, msg){
 }
 function loadMembers(){
   spin(true);
-  return api({action:'members'}).then(function(res){
+  return api({action:'members'}, 4, 800, 0, 30000).then(function(res){
     spin(false);
     if(!res.ok){
       if(res.error==='wrong_ip'){
@@ -523,7 +523,7 @@ function loadMembers(){
   }).catch(function(){ spin(false); toast('Mạng chậm — kéo xuống hoặc mở lại để thử'); });
 }
 function refreshMembers(){
-  return api({action:'members'}).then(function(res){
+  return api({action:'members'}, 4, 800, 0, 30000).then(function(res){
     if(res.ok){
       state.members=res.members; saveMembers(res.members); staleMark(false);
       if(state.screen==='s-list') renderList();
