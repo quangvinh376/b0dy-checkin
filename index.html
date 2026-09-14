@@ -341,7 +341,7 @@
 <div class="toast" id="toast"></div>
 
 <script>
-var API = 'https://script.google.com/macros/s/AKfycbwuMaBXh1pNlzzpOOOEPRqgmno5ASXCDkojrIm3czPlIQUvGpSLtoaaNsOlKquUFlugaQ/exec'; var API_WK = 'https://b0dy-kiosk-api.little-bonus-1d87.workers.dev/'; var WK_ON = {members:1, checkin:1, sign:1, pending:1, approve:1, admin:1};
+var API = 'https://script.google.com/macros/s/AKfycbwuMaBXh1pNlzzpOOOEPRqgmno5ASXCDkojrIm3czPlIQUvGpSLtoaaNsOlKquUFlugaQ/exec'; var API_WK = 'https://b0dy-kiosk-api.little-bonus-1d87.workers.dev/'; var WK_ON = {members:1, checkin:1, sign:1, pending:1, approve:1, admin:1}; var WK_OFF = {wk_unconfigured:1, wrong_ip:1, unknown_action:1};
 
 var state = { ip:'', members:[], sel:null, coachPin:'', adminPin:'', apin:'', screen:'s-list', checkinRes:null, _auto:0, _ipRetried:false, _touch:0, _synced:0, _lastTry:0, _syncing:false };
 try{ state.apin = localStorage.getItem('b0dy_apin') || ''; }catch(e){}
@@ -430,7 +430,7 @@ function api(body, tries, wait, t0, tmo){
   tmo = tmo || 14000;
   body.ip = state.ip;
   if(state.apin && !body.apin) body.apin = state.apin;
-  var payload = JSON.stringify(body); if(WK_ON[body.action] && !body._gas){ var wtmo = (body.action==='checkin') ? 20000 : 12000; return fetchJson(API_WK,{method:'POST',credentials:'omit',headers:{'Content-Type':'text/plain;charset=utf-8'},body:payload}, wtmo).then(function(r){ if(r && r.error==='wk_unconfigured') throw new Error('wk_off'); return r; }).catch(function(e){ if(body.action==='checkin') throw e; body._gas=1; return api(body, tries, wait, Date.now(), tmo); }); }
+  var payload = JSON.stringify(body); if(WK_ON[body.action] && !body._gas){ var wtmo = (body.action==='checkin') ? 20000 : 12000; return fetchJson(API_WK,{method:'POST',credentials:'omit',headers:{'Content-Type':'text/plain;charset=utf-8'},body:payload}, wtmo).then(function(r){ if(r && WK_OFF[r.error]) throw new Error('wk_off'); return r; }).catch(function(e){ if(body.action==='checkin' && e.message !== 'wk_off') throw e; body._gas=1; return api(body, tries, wait, Date.now(), tmo); }); }
   return fetchJson(API,{method:'POST',credentials:'omit',
     headers:{'Content-Type':'text/plain;charset=utf-8'},body:payload}, tmo)
     .catch(function(e){
