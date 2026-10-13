@@ -8,6 +8,15 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="B0DY">
 <meta name="theme-color" content="#0A0A0A">
+<script>
+/* 13/10/2026: app coach chuyen sang checkin.b0dy.studio, kiosk ve demo.b0dy.studio. May con du lieu app coach
+   (khoa lb_* trong localStorage cua domain nay) = may coach mo bieu tuong cu -> an kiosk, hien man chuyen (moved.js:
+   gui not hang doi chua gui bang PIN, go service worker cu, chi duong sang domain moi). May kiosk khong co lb_* -> khong doi gi. */
+(function(){try{var s=window.localStorage,i,k,on=0;for(i=0;i<s.length;i++){k=s.key(i)||'';if(k.indexOf('lb_')===0){on=1;break;}}if(!on)return;
+var d=document,h=d.documentElement,st=d.createElement('style'),sc=d.createElement('script');h.className+=' moved';
+st.textContent='html.moved body>*:not(#mv){display:none!important}';d.head.appendChild(st);
+sc.src='moved.js';sc.onerror=function(){h.className=h.className.replace(/\s*\bmoved\b/g,'');};d.head.appendChild(sc);}catch(e){}})();
+</script>
 <title>B0DY — Check-in</title>
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="icon" type="image/png" href="apple-touch-icon.png">
